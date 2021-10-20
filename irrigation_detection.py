@@ -144,5 +144,110 @@ def open_radolan_SF(path):
     
     return radolan_SF
 
+def download_NDVI_max(user,passwd,pathFTP,download_path):
+	"""
+	Arguments: user,passwd, pathFTP, download_path
+	"""
+	import ftplib
+	import os
+
+	# create folder in local space when not already there
+	if not os.path.exists(download_path):
+		os.makedirs(download_path)
+
+	# ftp server
+	ip = 'ftp.copernicus.vgt.vito.be' 
+
+	# create Connection
+	with ftplib.FTP('ftp.copernicus.vgt.vito.be') as ftp:
+		ftp.login(user=user, passwd=passwd)  # Login to ftp server
+		ftp.cwd(pathFTP)  # Change path to historic data
+		folders = ftp.nlst()
+		for folder in folders:
+			ftp.cwd(folder)
+			files = ftp.nlst()
+			for file in files:
+				print('Download %s' %file)
+				with open(os.path.join(download_path, file), 'wb') as fobj:
+					ftp.retrbinary('RETR %s' % file, fobj.write)
+			ftp.cwd('..')
+		ftp.quit()
+
+	return print('Job Done!')
+
+def unzip_ndvi(pathZip, pathData):
+    """
+    Arguments: Path to zipfile parent folder
+    """
+    import os
+    from irrigation_detection import search_files
+    import zipfile
+    
+    # create folder in local space when not already there
+    if not os.path.exists(pathData):
+        os.makedirs(pathData)
+        
+    files = search_files(pathZip, '.zip')
+    for file in files:
+        with zipfile.ZipFile(file, 'r') as zipObject:
+            zipObject.extractall(pathData)
+
+    return print('Job done!')
+
+def open_NDVI(path):
+    """
+    Arguments: path
+    """
+
+    import xarray as xr
+    
+    def get_dates(files):
+        """
+        get dates from attribute and convert to datetime64 object
+        Arguments: files
+        """
+        import datetime
+        import numpy as np
+
+        dates = [datetime.datetime.strptime(x.split('\\')[1], '%Y%m%d') for x in files]
+        dates = [np.datetime64(x, 'D') for x in dates]
+
+        return dates
+
+    files = search_files(path, '.tiff')
+
+    NDVI = [x for x in files if 'NDVI-NDVI_' in x]
+    NDVI_unc = [x for x in files if 'NDVI-unc' in x]
+    NDVI_nobs = [x for x in files if 'NDVI-NOBS' in x]
+    NDVI_Qflag = [x for x in files if 'NDVI-QFLAG' in x]
+    NDVI_TGrid = [x for x in files if 'NDVI-TIME' in x]
+
+
+    # Load in and concatenate all individual GeoTIFFs
+    NDVI = xr.concat([xr.open_rasterio(i) for i in NDVI], dim=xr.Variable('time', get_dates(NDVI)))
+    # Covert our xarray.DataArray into a xarray.Dataset
+    NDVI = NDVI.to_dataset('band').rename({1: 'NDVI'})
+
+    # Load in and concatenate all individual GeoTIFFs
+    NDVI_unc = xr.concat([xr.open_rasterio(i) for i in NDVI_unc], dim=xr.Variable('time', get_dates(NDVI_unc)))
+    # Covert our xarray.DataArray into a xarray.Dataset
+    NDVI_unc = NDVI_unc.to_dataset('band').rename({1: 'NDVI_unc'})
+
+    # Load in and concatenate all individual GeoTIFFs
+    NDVI_nobs = xr.concat([xr.open_rasterio(i) for i in NDVI_nobs], dim=xr.Variable('time', get_dates(NDVI_nobs)))
+    # Covert our xarray.DataArray into a xarray.Dataset
+    NDVI_nobs = NDVI_nobs.to_dataset('band').rename({1: 'NDVI_nobs'})
+
+    # Load in and concatenate all individual GeoTIFFs
+    NDVI_Qflag = xr.concat([xr.open_rasterio(i) for i in NDVI_Qflag], dim=xr.Variable('time', get_dates(NDVI_Qflag)))
+    # Covert our xarray.DataArray into a xarray.Dataset
+    NDVI_Qflag = NDVI_Qflag.to_dataset('band').rename({1: 'NDVI_Qflag'})
+
+    # Load in and concatenate all individual GeoTIFFs
+    NDVI_TGrid = xr.concat([xr.open_rasterio(i) for i in NDVI_TGrid], dim=xr.Variable('time', get_dates(NDVI_TGrid)))
+    # Covert our xarray.DataArray into a xarray.Dataset
+    NDVI_TGrid = NDVI_TGrid.to_dataset('band').rename({1: 'NDVI_TGrid'})
+
+    return [NDVI, NDVI_unc, NDVI_nobs, NDVI_Qflag, NDVI_TGrid]
 if __name__ == "__main__":
 	print("hea")
