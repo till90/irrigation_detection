@@ -24,11 +24,23 @@ def subset_ds(path,ds):
     aoi = salem.read_shapefile(path)
     #subset xarray dataset 
     ds_subset = ds.salem.subset(shape=aoi, margin=10)
+    
+    return ds_subset
+
+def roi_ds(path, ds):
+    """
+    Return roi subsetting xarray dataset. Arguments path to shape)
+    """
+    
+    import salem
+    #load shapefile with salem
+    aoi = salem.read_shapefile(path)
+
     #mask out unrelevant data 
     ds_subset = ds_subset.salem.roi(shape=aoi)
     
     return ds_subset
-
+    
 def export_values(latitude,longitude,ds,name):
     """
     Find nearest cell and export it to csv. Arguments: lat, lon, dataset, filename
@@ -211,43 +223,47 @@ def open_NDVI(path):
 
         dates = [datetime.datetime.strptime(x.split('\\')[1], '%Y%m%d') for x in files]
         dates = [np.datetime64(x, 'D') for x in dates]
-
+		
         return dates
 
     files = search_files(path, '.tiff')
-
+	
     NDVI = [x for x in files if 'NDVI-NDVI_' in x]
     NDVI_unc = [x for x in files if 'NDVI-unc' in x]
     NDVI_nobs = [x for x in files if 'NDVI-NOBS' in x]
     NDVI_Qflag = [x for x in files if 'NDVI-QFLAG' in x]
     NDVI_TGrid = [x for x in files if 'NDVI-TIME' in x]
 
-
     # Load in and concatenate all individual GeoTIFFs
     NDVI = xr.concat([xr.open_rasterio(i) for i in NDVI], dim=xr.Variable('time', get_dates(NDVI)))
     # Covert our xarray.DataArray into a xarray.Dataset
-    NDVI = NDVI.to_dataset('band').rename({1: 'NDVI'})
+    NDVI = NDVI.to_dataset('band').rename({1: 'NDVI', 'x':'lon', 'y':'lat'})
 
     # Load in and concatenate all individual GeoTIFFs
     NDVI_unc = xr.concat([xr.open_rasterio(i) for i in NDVI_unc], dim=xr.Variable('time', get_dates(NDVI_unc)))
     # Covert our xarray.DataArray into a xarray.Dataset
-    NDVI_unc = NDVI_unc.to_dataset('band').rename({1: 'NDVI_unc'})
-
+    NDVI_unc = NDVI_unc.to_dataset('band').rename({1: 'NDVI_unc', 'x':'lon', 'y':'lat'})	
+	
     # Load in and concatenate all individual GeoTIFFs
     NDVI_nobs = xr.concat([xr.open_rasterio(i) for i in NDVI_nobs], dim=xr.Variable('time', get_dates(NDVI_nobs)))
     # Covert our xarray.DataArray into a xarray.Dataset
-    NDVI_nobs = NDVI_nobs.to_dataset('band').rename({1: 'NDVI_nobs'})
-
+    NDVI_nobs = NDVI_nobs.to_dataset('band').rename({1: 'NDVI_nobs', 'x':'lon', 'y':'lat'})	
+	
     # Load in and concatenate all individual GeoTIFFs
     NDVI_Qflag = xr.concat([xr.open_rasterio(i) for i in NDVI_Qflag], dim=xr.Variable('time', get_dates(NDVI_Qflag)))
     # Covert our xarray.DataArray into a xarray.Dataset
-    NDVI_Qflag = NDVI_Qflag.to_dataset('band').rename({1: 'NDVI_Qflag'})
-
-    # Load in and concatenate all individual GeoTIFFs
+    NDVI_Qflag = NDVI_Qflag.to_dataset('band').rename({1: 'NDVI_Qflag', 'x':'lon', 'y':'lat'})	
+				
+    # Load in and concatenate all individual GeoTIFFs	
     NDVI_TGrid = xr.concat([xr.open_rasterio(i) for i in NDVI_TGrid], dim=xr.Variable('time', get_dates(NDVI_TGrid)))
-    # Covert our xarray.DataArray into a xarray.Dataset
-    NDVI_TGrid = NDVI_TGrid.to_dataset('band').rename({1: 'NDVI_TGrid'})
+    # Covert our xarray.DataArray into a xarray.Dataset	
+    NDVI_TGrid = NDVI_TGrid.to_dataset('band').rename({1: 'NDVI_TGrid', 'x':'lon', 'y':'lat'})	
 
-    return [NDVI, NDVI_unc, NDVI_nobs, NDVI_Qflag, NDVI_TGrid]
+	#merge all datasets
+    ds_merge = xr.merge([NDVI, NDVI_unc, NDVI_nobs, NDVI_Qflag, NDVI_TGrid])
+	
+    return ds_merge
+
+	
 if __name__ == "__main__":
 	print("hea")
