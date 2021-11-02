@@ -246,15 +246,16 @@ def extract_evapo(path):
         # Loop through files and get tif for every elemtn inside the tarball
     for i, month, days in zip(tqdm(range(len(tar_files))), tar_files, days):
         for single_day in days:
-            src_ds = gdal.Open("/vsitar/{%s}/%s" % (month, single_day))
-            dst_ds = driver.CreateCopy(
-                path + 'data/' + single_day[:-4] + ".tif", src_ds, 0)
-            del src_ds
-            del dst_ds
+            ds = gdal.Warp(path + 'data/' + single_day[:-4] + ".tif", "/vsitar/{%s}/%s" % (month, single_day), srcSRS='EPSG:31467', dstSRS='EPSG:4326')
+            #src_ds = gdal.Open("/vsitar/{%s}/%s" % (month, single_day))
+            #dst_ds = driver.CreateCopy(
+                #path + 'data/' + single_day[:-4] + ".tif", src_ds, 0)
+            #del src_ds
+            #del dst_ds
+            del ds
     return print('Job Done')
 
-
-def open_evapo(path):
+def open_evapo(path, real=True):
     """
     Arguments: path
     """
