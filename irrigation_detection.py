@@ -409,6 +409,124 @@ def open_NDVI(path):
 
     return ds_merge
 
+def get_s1_grd_mean(path, start, end, outname, with_ndvi, dateoffset):
+    """
+    Save a gejson to drive 
+    Arguments: path to gejson featurecollection, start date, end date, outname, with_ndvi 'yes' or 'no', dateoffset (int) while finding correspnding ndvi values to s1 images
+    """
+    # Import modules.
+    import ee
 
+    try:
+        # Initialize the library.
+        ee.Initialize()
+    except:
+        # Trigger the authentication flow.
+        ee.Authenticate()
+        # Initialize the library.
+        ee.Initialize()
+    import geojson
+    import geopandas as gpd
+    import pandas as pd
+    from glob import glob
+    import os
+    from datetime import datetime, timedelta
+    import geemap.eefolium as geemap
+    from tqdm import tqdm
+    import geemap
+    import time
+    
+    # Functions.
+    # Calculate coverage in km²
+    def get_area(image):
+        # Count the non zero/null pixels in the image within the aoi
+        actPixels = ee.Number(image.select('VV').reduceRegion(reducer= ee.Reducer.count(),scale= 10,geometry= fc_aoi.union().geometry(), maxPixels= 999999999).values().get(0))
+        # calculate the perc of cover
+        pcPix = actPixels.multiply(100).divide(1000000)
+        return image.set('area', pcPix)
+    
+    #NDVI
+    def add_ndvi(image):
+        """
+        Arguments: 
+        """
+        def maskS2clouds(image):
+            qa = image.select('QA60')
+            #Bits 10 and 11 are clouds and cirrus, respectively.
+            cloudBitMask = 1 << 10
+            cirrusBitMask = 1 << 11
+            #Both flags should be set to zero, indicating clear conditions.
+            mask = qa.bitwiseAnd(cloudBitMask).eq(0).And(qa.bitwiseAnd(cirrusBitMask).eq(0))
+            return image.updateMask(mask).divide(10000)
+
+        def NDVI(image):
+            ndvi = image.normalizedDifference(['nir','red']).rename('NDVI') #(first − second) / (first + second)
+            return image.addBands(ndvi)
+        
+        # Sentinel 2 image collection with corresponding named bands
+        bandNamesOut_s2 = ['Aerosols','blue','green','red','red edge 1','red edge 2','red edge 3','nir','red edge 4','water vapor','cirrus','swir1','swir2','QA60']
+        bandNamesS2 = ['B1','B2','B3','B4','B5','B6','B7','B8','B8A','B9','B10','B11','B12','QA60']
+        s2_1c = ee.ImageCollection('COPERNICUS/S2').select(bandNamesS2,bandNamesOut_s2)
+        s2_1c = s2_1c.filterDate(ee.Date(image.date().advance(-dateoffset,'days')), ee.Date(image.date().advance(+dateoffset,'days'))).filterBounds(image.geometry()).map(maskS2clouds).map(NDVI)
+        ndvi = ee.Image(s2_1c.qualityMosaic('NDVI').select('NDVI'))
+
+        return image.addBands(ndvi)
+    
+    def mask_by_ndvi(image):
+        mask = image.select('NDVI').lte(0.6)
+        return image.updateMask(mask)
+
+    # Paths to initial polygon(s) and outdir for ts data.
+    p_i = path
+    p_o = os.path.dirname(path) + '/ts_data/'
+    
+    # create folder in local space when not already there.
+    if not os.path.exists(p_o):
+        os.makedirs(p_o)
+        
+    # Load aoi features from file.
+    with open(p_i) as f:
+        data = geojson.load(f)
+
+    # Create GEE FeatureCollection from geojson file.
+    fc_aoi = ee.FeatureCollection(data)
+    area = fc_aoi.geometry().area().getInfo()
+    
+    # Sentinel 1 GRD image collection their dates and coverage over aoi
+    ic_s1 = ee.ImageCollection('COPERNICUS/S1_GRD').filterBounds(fc_aoi).filterDate(ee.Date(start), ee.Date(end)).filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+    
+    s1_dates = [datetime(1970, 1, 1) + timedelta(milliseconds=x) for x in ic_s1.aggregate_array("system:time_start").getInfo()]
+    s1_dates = [x.strftime("%Y-%m-%dT%H:%M:%S.%fZ") for x in s1_dates]    
+    s1_coverd = ic_s1.map(get_area).aggregate_array('area').getInfo()
+    
+    # Drop low coverage by metadata filter
+    s1_valid = [x for x,y in zip(s1_dates,s1_coverd) if y > area*0.25]
+    s1_valid_dates = ee.List(s1_valid).map(lambda x: ee.Date(x).millis())
+    ic_s1 = ic_s1.filter(ee.Filter.inList("system:time_start", s1_valid_dates))
+
+    print(ic_s1.size().getInfo(),'(%s)' %(len(s1_dates)), 'images between %s and %s' %(start,end), 'within %s km²' %(area/1000000),'\n') #s1_plot.aggregate_array("system:time_start").getInfo()
+    
+    if with_ndvi == 'yes':
+        # Add ndvi band
+        ic_s1 = ic_s1.map(add_ndvi)
+
+        # Mask areas with ndvi > 0.6
+        ic_s1 = ic_s1.map(mask_by_ndvi)
+        
+        # Map reducer function over imagecollection to get mean for multipolygon geometries
+        fc_s1 = ic_s1.map(lambda x: x.reduceRegions(collection=fc_aoi ,reducer='mean', crs='EPSG:4326',scale=10)).flatten()
+    else:
+        # Map reducer function over imagecollection to get mean for multipolygon geometries
+        fc_s1 = ic_s1.map(lambda x: x.reduceRegions(collection=fc_aoi ,reducer='mean', crs='EPSG:4326',scale=10)).flatten()
+    
+    # Export the FeatureCollection to a KML file.
+    task = ee.batch.Export.table.toDrive(collection = fc_s1,description='vectorsToDrive',folder='idm_gee_export', fileFormat= 'GeoJSON', fileNamePrefix=outname)
+    task.start()
+    
+    while task.active():
+      print('Polling for task (id: {}).'.format(task.id))
+      time.sleep(15)
+
+    return print("finished")
 if __name__ == "__main__":
     print("hea")
