@@ -26,16 +26,17 @@ Use Earth Engine Cloudcomputing. Get Sentinel - 1 GRD VV Mean for geometry while
 ### 10_surface_soil_moisture Not Working!!
 PYSMM python module to extract point or grid soil moisture information with GEE. 
 
+### 11_Irrigation_Detection_V1
+Irrigation detection with data from 07_Sentinel_1_grd notebook
+
 #### 12_query_data
 Acces all exported datasets from previous notebooks. Actual: LTS, BDFL5, NDVI10Dmax, RADOLAN, SSM, EVAPO_R, EVAPO_P, ... . Subset data. Preprocess and merge
 
 ### 13_Visualize
-Load data from 07_Sentinel_1_grd notebook. Split into equal satellite groups. Matplotlib and hvplot plotting.
+Load data from Irrigation_Detection_V1 notebook. Split into equal satellite groups. Matplotlib and hvplot plotting.
 
 ### Irrigation_map_whr Not working!!
 Extract features from pdf file
-
-### Irrigation_Detection_V1
 
 ### old_notebook_01
 GEE stuff from first project. Visualizations
@@ -55,6 +56,7 @@ Statistical and machine learning Stuff from first project. Seasonal Mean, Standa
 [Earth Engine Data Catalog | Climate, Weather, Imagery and Geophysical datasets](https://developers.google.com/earth-engine/datasets)
 ## Python modules
 ### Geospatial Data Storage and Processing
+[geemap | interactive mapping with Google Earth Engine, ipyleaflet and ipywidgets](https://geemap.org/)
 [xarray | N-D labeled arrays and datasets in Python](http://xarray.pydata.org/en/stable/)
 
 [pandas | data analysis and manipulation tool](https://pandas.pydata.org/)
