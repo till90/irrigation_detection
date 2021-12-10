@@ -31,6 +31,7 @@ Acces all exported datasets from previous notebooks. Actual: LTS, BDFL5, NDVI10D
 
 ### 13_Visualize
 Load data from 07_Sentinel_1_grd notebook. Split into equal satellite groups. Matplotlib and hvplot plotting.
+
 ### Irrigation_map_whr Not working!!
 Extract features from pdf file
 
