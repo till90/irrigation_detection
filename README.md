@@ -1,5 +1,5 @@
 # Irrigation Detection 
-This repository is part of a master-thesis. It contains scripts for downloading, preprocessing, classification and visualisation for irrigation detection purpose. Most functions used inside jupyter notebooks are stored in irrigation_detection.py . This repository is under construction and functions may not be appropiate declared.
+This repository is part of a master-thesis. It contains scripts for downloading, preprocessing, classification and visualisation for irrigation detection purpose. Most functions used inside jupyter notebooks are stored in irrigation_detection.py . This repository is under construction and functions may not work or be whack explained.
 
 ## Notebooks
 ### 01_SSM_1km_V1 [Product Source | World](https://land.copernicus.eu/global/products/ssm)
@@ -23,6 +23,9 @@ Download potentiel and real Evaporation. Transform projection with Gdal. Load ex
 ### 07_Sentinel_1_grd[Product Source | World](https://developers.google.com/s/results/earth-engine/datasets?q=sentinel%20)
 Use Earth Engine Cloudcomputing. Get Sentinel - 1 GRD VV Mean for geometry while masking high NDVI values. Construct Geopandas GeoDataFrame and add all Information from filename.SWI map expors. Extract data for plot and grid size
 
+### Export_ImageCollection_fromGee
+Query data with GEE and geemap to get 10m plot time series and 50m grid(10x10km) time series data for different Obversation modes of Sentinel 1. Get NDVI, SWI, VV, Angle. Download as tif.
+
 ### 10_surface_soil_moisture Not Working!!
 PYSMM python module to extract point or grid soil moisture information with GEE. 
 
@@ -43,6 +46,12 @@ GEE stuff from first project. Visualizations
 
 ### old_notebook_02
 Statistical and machine learning Stuff from first project. Seasonal Mean, Standart Deviation, Histogram, Correlation, Covariance, Spearman, Pearson, Cross correlation, Windowed time lagged cross correlation, rolling window, Dynamic Time Warping, Clustering, precipitation analysis, Seasonal Patterns, show measurements on map, univariate description, bivariate description, Preprocessing, geographical fescription 
+
+### old_notebook_03
+clustering images to get soil data from image
+
+### old_notebook_04
+Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statistical stuff 
 
 # Usefull Links
 ## Computing
