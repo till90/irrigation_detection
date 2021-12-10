@@ -528,5 +528,39 @@ def get_s1_grd_mean(path, start, end, outname, with_ndvi, dateoffset):
       time.sleep(15)
 
     return print("finished")
+def add_ndvi(image, dateoffset = 15):
+        """
+        Arguments: Filter S2 TOA Collection to roi, mask cloudy pixels, calculate NDVI values, Make mosaic from +- 15 days from s1 image
+        """
+        import ee
+        def maskS2clouds(image):
+            qa = image.select('QA60')
+            #Bits 10 and 11 are clouds and cirrus, respectively.
+            cloudBitMask = 1 << 10
+            cirrusBitMask = 1 << 11
+            #Both flags should be set to zero, indicating clear conditions.
+            mask = qa.bitwiseAnd(cloudBitMask).eq(0).And(qa.bitwiseAnd(cirrusBitMask).eq(0))
+            return image.updateMask(mask).divide(10000)
+
+        def NDVI(image):
+            ndvi = image.normalizedDifference(['nir','red']).rename('NDVI') #(first − second) / (first + second)
+            return image.addBands(ndvi)
+        
+        # Sentinel 2 image collection with corresponding named bands
+        bandNamesOut_s2 = ['Aerosols','blue','green','red','red edge 1','red edge 2','red edge 3','nir','red edge 4','water vapor','cirrus','swir1','swir2','QA60']
+        bandNamesS2 = ['B1','B2','B3','B4','B5','B6','B7','B8','B8A','B9','B10','B11','B12','QA60']
+        
+        s2_1c = ee.ImageCollection('COPERNICUS/S2').select(bandNamesS2,bandNamesOut_s2)
+        s2_1c = s2_1c.filterDate(ee.Date(image.date().advance(-dateoffset,'days')), ee.Date(image.date().advance(+dateoffset,'days'))).filterBounds(image.geometry()).map(maskS2clouds).map(NDVI)
+        
+        ndvi = ee.Image(s2_1c.qualityMosaic('NDVI').select('NDVI'))
+
+        return image.addBands(ndvi)
+
+def mask_by_landcover(image):
+    image = image.select('Map')
+    mask = image.eq(40).Or(image.eq(30))
+    return image.updateMask(mask)
+
 if __name__ == "__main__":
     print("hea")
