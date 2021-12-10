@@ -23,11 +23,19 @@ Download potentiel and real Evaporation. Transform projection with Gdal. Load ex
 ### 07_Sentinel_1_grd[Product Source | World](https://developers.google.com/s/results/earth-engine/datasets?q=sentinel%20)
 Use Earth Engine Cloudcomputing. Get Sentinel - 1 GRD VV Mean for geometry while masking high NDVI values. Construct Geopandas GeoDataFrame and add all Information from filename.SWI map expors. Extract data for plot and grid size
 
-08_vegetation_indizes
+### 10_surface_soil_moisture Not Working!!
+PYSMM python module to extract point or grid soil moisture information with GEE. 
 
-09_corine_land_Cover
+#### 12_query_data
+Acces all exported datasets from previous notebooks. Actual: LTS, BDFL5, NDVI10Dmax, RADOLAN, SSM, EVAPO_R, EVAPO_P, ... . Subset data. Preprocess and merge
 
-10_surface_soil_moisture
+### 13_Visualize
+Load data from 07_Sentinel_1_grd notebook. Split into equal satellite groups. Matplotlib and hvplot plotting.
+### Irrigation_map_whr Not working!!
+Extract features from pdf file
+
+#### Irrigation_Detection_V1
+
 
 # Usefull Links
 ## Computing
@@ -39,3 +47,16 @@ Use Earth Engine Cloudcomputing. Get Sentinel - 1 GRD VV Mean for geometry while
 [DWD Opendata FTP Server | climate enviromentl data Germany](https://opendata.dwd.de/)
 
 [Earth Engine Data Catalog | Climate, Weather, Imagery and Geophysical datasets](https://developers.google.com/earth-engine/datasets)
+## Python modules
+### Soil Moisture
+[PYSMM | Sentinel-1 soil-Moisture Mapping Toolbox](https://pysmm.readthedocs.io/en/latest/)
+### Plotting
+[matplotlib | creating static, animated, and interactive visualizations in Python](https://matplotlib.org/stable/index.html)
+
+[hvPlot | A high-level plotting API for the PyData ecosystem built on HoloViews](https://hvplot.holoviz.org/)
+### Geospatial Data Storage and Processing
+[xarray | N-D labeled arrays and datasets in Python](http://xarray.pydata.org/en/stable/)
+
+[pandas | data analysis and manipulation tool](https://pandas.pydata.org/)
+
+[Geopandas | geospatial data handling](https://geopandas.org/en/stable/)
