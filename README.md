@@ -35,8 +35,13 @@ Load data from 07_Sentinel_1_grd notebook. Split into equal satellite groups. Ma
 ### Irrigation_map_whr Not working!!
 Extract features from pdf file
 
-#### Irrigation_Detection_V1
+### Irrigation_Detection_V1
 
+### old_notebook_01
+GEE stuff from first project. Visualizations
+
+### old_notebook_02
+Statistical and machine learning Stuff from first project. Seasonal Mean, Standart Deviation, Histogram, Correlation, Covariance, Spearman, Pearson, Cross correlation, Windowed time lagged cross correlation, rolling window, Dynamic Time Warping, Clustering, precipitation analysis, Seasonal Patterns, show measurements on map, univariate description, bivariate description, Preprocessing, geographical fescription 
 
 # Usefull Links
 ## Computing
@@ -49,15 +54,21 @@ Extract features from pdf file
 
 [Earth Engine Data Catalog | Climate, Weather, Imagery and Geophysical datasets](https://developers.google.com/earth-engine/datasets)
 ## Python modules
-### Soil Moisture
-[PYSMM | Sentinel-1 soil-Moisture Mapping Toolbox](https://pysmm.readthedocs.io/en/latest/)
-### Plotting
-[matplotlib | creating static, animated, and interactive visualizations in Python](https://matplotlib.org/stable/index.html)
-
-[hvPlot | A high-level plotting API for the PyData ecosystem built on HoloViews](https://hvplot.holoviz.org/)
 ### Geospatial Data Storage and Processing
 [xarray | N-D labeled arrays and datasets in Python](http://xarray.pydata.org/en/stable/)
 
 [pandas | data analysis and manipulation tool](https://pandas.pydata.org/)
 
 [Geopandas | geospatial data handling](https://geopandas.org/en/stable/)
+
+### Machine learning, Classification, Statistics
+[tslearn | machine learning tools for time series data](https://tslearn.readthedocs.io/en/stable/)
+
+
+### Soil Moisture
+[PYSMM | Sentinel-1 soil-Moisture Mapping Toolbox](https://pysmm.readthedocs.io/en/latest/)
+### Plotting
+[matplotlib | creating static, animated, and interactive visualizations in Python](https://matplotlib.org/stable/index.html)
+
+[hvPlot | A high-level plotting API for the PyData ecosystem built on HoloViews](https://hvplot.holoviz.org/)
+
