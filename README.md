@@ -63,6 +63,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 [DWD Opendata FTP Server | climate enviromentl data Germany](https://opendata.dwd.de/)
 
 [Earth Engine Data Catalog | Climate, Weather, Imagery and Geophysical datasets](https://developers.google.com/earth-engine/datasets)
+### Remote Sensing
+[IDB Index DataBase | A database for remote sensing indices](https://www.indexdatabase.de/)
 ## Python modules
 ### Geospatial Data Storage and Processing
 [geemap | interactive mapping with Google Earth Engine, ipyleaflet and ipywidgets](https://geemap.org/)
