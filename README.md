@@ -54,20 +54,35 @@ clustering images to get soil data from image
 Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statistical stuff 
 
 # Usefull Links
+
 ## Computing
+
 [Google Earth Engine | Geopsatial big data computing with many datasets](https://code.earthengine.google.com/)
+
 ## Data
+
 ### Portals
+
 [Geoportal Hessen | raumbezogenen Daten der Geodateninfrastruktur Hessen (GDI-HE)](https://www.geoportal.hessen.de/)
 
 [DWD Opendata FTP Server | climate enviromentl data Germany](https://opendata.dwd.de/)
 
 [Earth Engine Data Catalog | Climate, Weather, Imagery and Geophysical datasets](https://developers.google.com/earth-engine/datasets)
+
+### Specific Envrioment Data
+
+[Bodeninformationen | Hessen - HLNUG](https://www.hlnug.de/themen/boden/information)
+
 ### Remote Sensing
+
 [IDB Index DataBase | A database for remote sensing indices](https://www.indexdatabase.de/)
+
 ## Python modules
+
 ### Geospatial Data Storage and Processing
+
 [geemap | interactive mapping with Google Earth Engine, ipyleaflet and ipywidgets](https://geemap.org/)
+
 [xarray | N-D labeled arrays and datasets in Python](http://xarray.pydata.org/en/stable/)
 
 [pandas | data analysis and manipulation tool](https://pandas.pydata.org/)
@@ -75,12 +90,16 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 [Geopandas | geospatial data handling](https://geopandas.org/en/stable/)
 
 ### Machine learning, Classification, Statistics
+
 [tslearn | machine learning tools for time series data](https://tslearn.readthedocs.io/en/stable/)
 
 
 ### Soil Moisture
+
 [PYSMM | Sentinel-1 soil-Moisture Mapping Toolbox](https://pysmm.readthedocs.io/en/latest/)
+
 ### Plotting
+
 [matplotlib | creating static, animated, and interactive visualizations in Python](https://matplotlib.org/stable/index.html)
 
 [hvPlot | A high-level plotting API for the PyData ecosystem built on HoloViews](https://hvplot.holoviz.org/)
