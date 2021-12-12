@@ -100,6 +100,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 ### Plotting
 
+[colorbars | matplotlib library for colorbars](https://matplotlib.org/stable/tutorials/colors/colormaps.html#qualitative)
+
 [matplotlib | creating static, animated, and interactive visualizations in Python](https://matplotlib.org/stable/index.html)
 
 [hvPlot | A high-level plotting API for the PyData ecosystem built on HoloViews](https://hvplot.holoviz.org/)
