@@ -1,5 +1,5 @@
 # Irrigation Detection 
-This repository is part of a master-thesis. It contains scripts for downloading, preprocessing, classification and visualisation for irrigation detection purpose. Most functions used inside jupyter notebooks are stored in irrigation_detection.py . This repository is under construction and functions may not work or be whack explained.
+This repository is part of a master-thesis. It contains scripts for downloading, preprocessing, classification and visualisation for irrigation detection purpose. Main part will be implementing of irrigation detection method from [Irrigation Events Detection over Intensively Irrigated Grassland Plots Using Sentinel-1 Data](https://doi.org/10.3390/rs12244058) in V1. and from [Near Real-Time Irrigation Detection at Plot Scale Using Sentinel-1 Data](https://www.mdpi.com/2072-4292/12/9/1456) Most functions used inside jupyter notebooks are stored in irrigation_detection.py . This repository is under construction and functions may not work or be whack explained.
 
 ## Notebooks
 ### 01_SSM_1km_V1 [Product Source | World](https://land.copernicus.eu/global/products/ssm)
