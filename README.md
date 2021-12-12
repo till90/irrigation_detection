@@ -73,6 +73,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [Earth Engine Data Catalog | Climate, Weather, Imagery and Geophysical datasets](https://developers.google.com/earth-engine/datasets)
 
+[Copernicus Open Access Hub | Sentinel Data Download](https://scihub.copernicus.eu/)
+
 ### Specific Envrioment Data
 
 [Bodeninformationen | Hessen - HLNUG](https://www.hlnug.de/themen/boden/information)
@@ -80,6 +82,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 ### Remote Sensing
 
 [IDB Index DataBase | A database for remote sensing indices](https://www.indexdatabase.de/)
+
+[Sentinel Online | Official Sentinel Missions Homepage](https://sentinels.copernicus.eu/web/sentinel/home)
 
 ## Python modules
 
