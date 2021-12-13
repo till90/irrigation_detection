@@ -63,7 +63,7 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [Google Earth Engine | Geopsatial big data computing with many datasets](https://code.earthengine.google.com/)
 
-[geojson.io | tool for creating, viewing, and sharing maps][http://geojson.io/#map=2/20.0/0.0)
+[geojson.io | tool for creating, viewing, and sharing maps](http://geojson.io/#map=2/20.0/0.0)
 
 ## Data
 
