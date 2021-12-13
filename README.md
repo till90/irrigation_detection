@@ -81,7 +81,7 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [Bodeninformationen | Hessen - HLNUG](https://www.hlnug.de/themen/boden/information)
 
-[Soil Moisture Network ISMN | global in-situ soil moisture database(https://ismn.geo.tuwien.ac.at/en/)
+[Soil Moisture Network ISMN | global in-situ soil moisture database](https://ismn.geo.tuwien.ac.at/en/)
 
 ### Remote Sensing
 
