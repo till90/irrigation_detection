@@ -83,6 +83,7 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [Soil Moisture Network ISMN | global in-situ soil moisture database](https://ismn.geo.tuwien.ac.at/en/)
 
+[THEIA IRSTEA SOIL MOISTURE CATALOG | radar signal inversion algorithm uses neural networks(https://thisme.cines.teledetection.fr/home)
 ### Remote Sensing
 
 [IDB Index DataBase | A database for remote sensing indices](https://www.indexdatabase.de/)
@@ -113,6 +114,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 [PYSMM | Sentinel-1 soil-Moisture Mapping Toolbox](https://pysmm.readthedocs.io/en/latest/)
 
 [ismn | Reader for the data from the Soil Moisture Database(ISMN)](https://ismn.readthedocs.io/en/latest/)
+
+[Cosmic-Ray Sensor PYthon tool (crspy) | Cosmic Ray Sensor data into soil moisture estimates](https://github.com/danpower101/crspy)
 
 ### Plotting
 
