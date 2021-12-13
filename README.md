@@ -112,7 +112,7 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [PYSMM | Sentinel-1 soil-Moisture Mapping Toolbox](https://pysmm.readthedocs.io/en/latest/)
 
-[ismn | Reader for the data from the Soil Moisture Database(ISMN)](https://github.com/TUW-GEO/ismn)
+[ismn | Reader for the data from the Soil Moisture Database(ISMN)](https://ismn.readthedocs.io/en/latest/)
 
 ### Plotting
 
