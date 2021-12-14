@@ -77,6 +77,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [Copernicus Open Access Hub | Sentinel Data Download](https://scihub.copernicus.eu/)
 
+[THEIA | Products and Algorithms for Land Surfaces](https://www.theia-land.fr/en/homepage-en/)
+
 ### Specific Envrioment Data
 
 [Bodeninformationen | Hessen - HLNUG](https://www.hlnug.de/themen/boden/information)
@@ -84,11 +86,14 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 [Soil Moisture Network ISMN | global in-situ soil moisture database](https://ismn.geo.tuwien.ac.at/en/)
 
 [THEIA IRSTEA SOIL MOISTURE CATALOG | radar signal inversion algorithm uses neural networks(https://thisme.cines.teledetection.fr/home)
+
 ### Remote Sensing
 
 [IDB Index DataBase | A database for remote sensing indices](https://www.indexdatabase.de/)
 
 [Sentinel Online | Official Sentinel Missions Homepage](https://sentinels.copernicus.eu/web/sentinel/home)
+
+[Irrigation+ | quantitative, accurate and routinely monitoring of irrigation](https://esairrigationplus.org/)
 
 ## Python modules
 
