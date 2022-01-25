@@ -562,5 +562,163 @@ def mask_by_landcover(image):
     mask = image.eq(40).Or(image.eq(30))
     return image.updateMask(mask)
 
+def get_s1_ts(lon, lat, ismn_idx, start, end, pol, mode, res, red, scale, crs):
+	"""
+	Arguments: lon=longitude, lat = latitude, ismn_idx = ismn_id, start=start date, end= end date, pol=polarizaion(VV, VH, [VV, VH, HV,...], mode= [IW, SW], res=resolution[10,20,30], red=reducer['first, mean, median'], scale=scale for reducer, crs=crs for reducer, must be same as for lat/lon
+	Get Sentinel 1 GRD Time Series for lat/lon with Metadata as GeopandasGeoDataFrame
+	"""
+	
+	#import modules
+	import ee
+	import geopandas as gpd
+	from datetime import datetime
+	from shapely.geometry import Point
+	
+	# Authenticate Google Earth Engine
+	try:
+		ee.Initialize()
+	except:
+		# Trigger the authentication flow
+		ee.Authenticate()
+		# Initialize the library
+		ee.Initialize()
+	
+	
+	# Create Point Geometry (Longitude/Latitude)
+	lon = lon
+	lat = lat
+	ismn_idx = ismn_idx #ISMN ID
+	poi = ee.Geometry.Point([lon,lat]) #GEE Geometry Object
+	poi_fc = ee.FeatureCollection(poi) #GEE FeatureCollection Object
+	
+	
+	# Sentinel 1 Collection
+	# Filter Collection by Location
+	sentinel1 = ee.ImageCollection('COPERNICUS/S1_GRD').filterBounds(poi_fc)
+	# Filter by Date
+	sentinel1 = sentinel1.filterDate(start, end)
+	# Filter by Polarization
+	sentinel1 = sentinel1.filter(ee.Filter.listContains('transmitterReceiverPolarisation', pol))
+	# Filter by Swath Mode
+	sentinel1 = sentinel1.filter(ee.Filter.eq('instrumentMode', mode))
+	# Filter by Resolution
+	sentinel1 = sentinel1.filter(ee.Filter.eq('resolution_meters', res))
+	
+	
+	# Apply reducer
+	ts = sentinel1.map(lambda x: x.reduceRegions(
+		reducer = red,
+		collection = poi_fc,
+		scale = scale,
+		crs = crs
+		)).flatten().getInfo()
+		
+	
+	# Aggregate data
+	orbit = sentinel1.aggregate_array('orbitProperties_pass').getInfo()
+	platform = sentinel1.aggregate_array('platform_number').getInfo()
+	img_id = [x['id'] for x in ts['features']]
+	ismn_id = [ismn_idx] * len(img_id)
+	date = [datetime.strptime(x['id'].split('_')[4][:15], '%Y%m%dT%H%M%S') for x in ts['features']]
+	geometry = [Point(x['geometry']['coordinates']) for x in ts['features']]
+	VH = [x['properties']['VH'] for x in ts['features']]
+	VV = [x['properties']['VV'] for x in ts['features']]
+	angle = [x['properties']['angle'] for x in ts['features']]
+	
+	
+	# Create GeopandasDataFrame
+	gdf = gpd.GeoDataFrame({'ismn_id' : ismn_id, 'date' : date, 'platform' : platform, 'orbit' : orbit, 'VV' : VV, 'VH' : VH, 'angle' : angle, 'img_id' : img_id, 'geometry' : geometry})
+	
+	return gdf
+
+def get_s2_ts(lon, lat, ismn_idx, start, end, red, scale, crs):
+	"""
+	Arguments:
+	bla
+	"""
+	
+	# Import modules
+	import ee
+	from datetime import datetime
+	from shapely.geometry import Point
+	import geopandas as gpd
+	import pandas as pd
+	
+	#Authenticate to Google Earth Engine
+	try:
+		ee.Initialize()
+	except:
+		ee.Authenticate()
+		ee.Initialize()
+	
+	
+	# Create Point Geometry (Longitude/Latitude)
+	lon = lon
+	lat = lat
+	ismn_idx = ismn_idx #ISMN ID
+	poi = ee.Geometry.Point([lon,lat]) #GEE Geometry Object
+	poi_fc = ee.FeatureCollection(poi) #GEE FeatureCollection Object
+	
+	# Sentinel 2 Collection
+	# Filter Collection by Location
+	sentinel2 = ee.ImageCollection('COPERNICUS/S2').filterBounds(poi_fc)
+	# Filter by Date
+	sentinel2 = sentinel2.filterDate(start, end)
+	
+	
+	# Mask Clouds
+	def maskS2clouds(image):
+		qa = image.select('QA60')
+		# Bits 10 and 11 are clouds and cirrus, respectively
+		cloudBitMask = 1 << 10
+		cirrusBitMask = 1 << 11
+		# Set both to zero to have clear conditions
+		mask = qa.bitwiseAnd(cloudBitMask).eq(0).And(qa.bitwiseAnd(cirrusBitMask).eq(0))
+		# update image by masking pixel with cloud or cirrus and copy properties
+		return image.updateMask(mask).divide(10000).copyProperties(source=image)
+		
+	sentinel2 = sentinel2.map(maskS2clouds)
+	
+	
+	#Apply Reducer
+	ts = sentinel2.map(lambda x: x.reduceRegions(
+	reducer = 'mean',
+	collection = poi_fc,
+	scale = 10,  
+	crs = 'EPSG:4326'
+	)).flatten().getInfo()
+	
+	
+	#Aggregate data
+	img_id = [x['id'] for x in ts['features']]
+	ismn_id = [ismn_idx] * len(img_id)
+	date = [datetime.strptime(x['id'][:15], '%Y%m%dT%H%M%S') for x in ts['features']]
+	geometry = [Point(x['geometry']['coordinates']) for x in ts['features']]
+	Aerosols = [x['properties']['B1'] for x in ts['features']]
+	Blue = [x['properties']['B2'] for x in ts['features']]
+	Green = [x['properties']['B3'] for x in ts['features']]
+	Red = [x['properties']['B4'] for x in ts['features']]
+	RedEdge1 = [x['properties']['B5'] for x in ts['features']]
+	RedEdge2 = [x['properties']['B6'] for x in ts['features']]
+	RedEdge3 = [x['properties']['B7'] for x in ts['features']]
+	NIR = [x['properties']['B8'] for x in ts['features']]
+	RedEdge4 = [x['properties']['B8A'] for x in ts['features']]
+	WaterVapor = [x['properties']['B9'] for x in ts['features']]
+	Cirrus = [x['properties']['B10'] for x in ts['features']]
+	SWIR1 = [x['properties']['B11'] for x in ts['features']]
+	SWIR2 = [x['properties']['B12'] for x in ts['features']]
+	CloudMask = [x['properties']['QA60'] for x in ts['features']]
+	
+	gdf = gpd.GeoDataFrame({'ismn_id' : ismn_id, 'date' : date, 'Aerosols' : Aerosols ,'Blue' : Blue, 'Green' : Green, 'Red' : Red, 'RedEdge1' : RedEdge1, 'RedEdge2' : RedEdge2, 'RedEdge3' : RedEdge3, 'RedEdge4' : RedEdge4, 'NIR' : NIR, 'WaterVapor' : WaterVapor, 'Cirrus' : Cirrus, 'SWIR1' : SWIR1, 'SWIR2' : SWIR2, 'CloudMask' : CloudMask, 'geometry' : geometry})
+	
+	
+	# Tidy up
+	gdf = gdf.groupby(pd.Grouper(key='date',freq='d')).mean().dropna().reset_index()
+	
+	
+	# Add Indices
+	gdf['NDVI'] = (gdf['NIR'] - gdf['Red']) / (gdf['NIR'] + gdf['Red'])
+	
+	return gdf
 if __name__ == "__main__":
     print("hea")
