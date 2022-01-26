@@ -629,6 +629,11 @@ def get_s1_ts(lon, lat, ismn_idx, start, end, pol, mode, res, red, scale, crs):
 	# Create GeopandasDataFrame
 	gdf = gpd.GeoDataFrame({'ismn_id' : ismn_id, 'date' : date, 'platform' : platform, 'orbit' : orbit, 'VV' : VV, 'VH' : VH, 'angle' : angle, 'img_id' : img_id, 'geometry' : geometry})
 	
+	# Tidy up
+	#Split date and time
+	#gdf['time'] = gdf['date'].dt.time
+	#gdf['date'] = gdf['date'].dt.date
+	
 	return gdf
 
 def get_s2_ts(lon, lat, ismn_idx, start, end, red, scale, crs):
@@ -709,16 +714,82 @@ def get_s2_ts(lon, lat, ismn_idx, start, end, red, scale, crs):
 	SWIR2 = [x['properties']['B12'] for x in ts['features']]
 	CloudMask = [x['properties']['QA60'] for x in ts['features']]
 	
-	gdf = gpd.GeoDataFrame({'ismn_id' : ismn_id, 'date' : date, 'Aerosols' : Aerosols ,'Blue' : Blue, 'Green' : Green, 'Red' : Red, 'RedEdge1' : RedEdge1, 'RedEdge2' : RedEdge2, 'RedEdge3' : RedEdge3, 'RedEdge4' : RedEdge4, 'NIR' : NIR, 'WaterVapor' : WaterVapor, 'Cirrus' : Cirrus, 'SWIR1' : SWIR1, 'SWIR2' : SWIR2, 'CloudMask' : CloudMask, 'geometry' : geometry})
 	
+	#Create Geopandas DataFrame
+	gdf = gpd.GeoDataFrame({'ismn_id' : ismn_id, 'date' : date, 'Aerosols' : Aerosols ,'Blue' : Blue, 'Green' : Green, 'Red' : Red, 'RedEdge1' : RedEdge1, 'RedEdge2' : RedEdge2, 'RedEdge3' : RedEdge3, 'RedEdge4' : RedEdge4, 'NIR' : NIR, 'WaterVapor' : WaterVapor, 'Cirrus' : Cirrus, 'SWIR1' : SWIR1, 'SWIR2' : SWIR2, 'CloudMask' : CloudMask, 'img_id' : img_id, 'geometry' : geometry})
+
 	
 	# Tidy up
+	#delete raws with nan values and get mean for multiple granularies with same date
 	gdf = gdf.groupby(pd.Grouper(key='date',freq='d')).mean().dropna().reset_index()
-	
+	# In Previous step geometry and ismn_id was dropped because the mean of geometry is not possible and ismn_id was float so add here again
+	gdf['ismn_id'] = [ismn_idx] * len(gdf)
+	gdf['geometry'] = [geometry[0]] * len(gdf)
 	
 	# Add Indices
 	gdf['NDVI'] = (gdf['NIR'] - gdf['Red']) / (gdf['NIR'] + gdf['Red'])
 	
 	return gdf
+
+def get_ismn_data(filepath, variable, min_depth, max_depth, landcover):
+	"""
+	Arguments
+	"""
+	
+	# Import modules
+	from ismn.interface import ISMN_Interface
+	import pandas as pd
+	
+	# Read data
+	# Path to data downloaded from ismn network in header+value composite
+	file_name_in = filepath
+	
+	# Either a .zip file or one folder that contains all networks, here we read from .zip
+	ismn_data = ISMN_Interface(filepath, parallel=True)
+
+
+	# Select specific stations or networks
+	ids = ismn_data.get_dataset_ids(variable = variable, min_depth = min_depth, max_depth = max_depth ,filter_meta_dict={'lc_2005': landcover}) 
+	
+	# Read Station data for selected stations 
+	ts = [ismn_data.read(x ,return_meta=True) for x in ids]
+	
+	
+	# Extract lat/lon/id from data
+	ismn_loi = list()
+	for (data, meta), ismn_id in zip(ts, ids):
+		ismn_loi.append([meta.longitude.values[0],meta.latitude.values[0], ismn_id])
+	ismn_loi = pd.DataFrame(ismn_loi).drop_duplicates(subset=[0,1]).values
+	
+	return ts, ismn_loi
+
+
+def merge_s1_s2(gdf_s1, gdf_s2, driver, filepath):
+    """
+    Arguments:
+    """
+    
+    # Import modules
+    import pandas as pd
+    
+    
+    # Workaround for getting date from gdf_2 to calculate ndvi offsett in days
+    gdf_s2['date_y'] = gdf_s2.date
+    
+    # Merge ndvi value to closest s1 date
+    gdf = pd.merge_asof(gdf_s1.sort_values('date'), gdf_s2, suffixes=('', '_y'), on='date', direction='nearest').drop(['ismn_id_y','geometry_y' ], axis=1)
+	
+	
+    # Calculate time difference between s1 date and ndvi date
+    gdf['s2_distance'] = gdf['date'] - gdf['date_y']
+    gdf['s2_distance'] = gdf['s2_distance'].dt.days
+    
+    #Write GeodataFrame to file as geojson
+    name = str(gdf.iloc[0].ismn_id) + '_' + str(gdf.iloc[0].geometry.x) + '_' + str(gdf.iloc[0].geometry.y) + '.geojson'
+    gdf.to_file(filename = filepath + name, driver = driver)
+    
+    return print('Write :', filepath + name, ' succesfully to disk')
+
+
 if __name__ == "__main__":
     print("hea")
