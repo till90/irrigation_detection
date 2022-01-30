@@ -612,7 +612,7 @@ def get_s1_ts(lon, lat, ismn_idx, start, end, pol, mode, res, red, scale, crs):
 		scale = scale,
 		crs = crs
 		)).flatten().getInfo()
-		
+	
 	
 	# Aggregate data
 	orbit = sentinel1.aggregate_array('orbitProperties_pass').getInfo()
@@ -687,11 +687,11 @@ def get_s2_ts(lon, lat, ismn_idx, start, end, red, scale, crs):
 	
 	#Apply Reducer
 	ts = sentinel2.map(lambda x: x.reduceRegions(
-	reducer = 'mean',
-	collection = poi_fc,
-	scale = 10,  
-	crs = 'EPSG:4326'
-	)).flatten().getInfo()
+		reducer = 'mean',
+		collection = poi_fc,
+		scale = 10,  
+		crs = 'EPSG:4326'
+		)).flatten().getInfo()
 	
 	
 	#Aggregate data
@@ -759,9 +759,9 @@ def get_ismn_data(filepath, variable, min_depth, max_depth, landcover):
 	ismn_loi = list()
 	for (data, meta), ismn_id in zip(ts, ids):
 		ismn_loi.append([meta.longitude.values[0],meta.latitude.values[0], ismn_id])
-	ismn_loi = pd.DataFrame(ismn_loi).drop_duplicates(subset=[0,1]).values
+	ismn_loi_unique = pd.DataFrame(ismn_loi).drop_duplicates(subset=[0,1]).values
 	
-	return ts, ismn_loi
+	return ts, ismn_loi, ismn_loi_unique
 
 
 def merge_s1_s2(gdf_s1, gdf_s2, driver, filepath):
@@ -777,7 +777,7 @@ def merge_s1_s2(gdf_s1, gdf_s2, driver, filepath):
     gdf_s2['date_y'] = gdf_s2.date
     
     # Merge ndvi value to closest s1 date
-    gdf = pd.merge_asof(gdf_s1.sort_values('date'), gdf_s2, suffixes=('', '_y'), on='date', direction='nearest').drop(['ismn_id_y','geometry_y' ], axis=1)
+    gdf = pd.merge_asof(gdf_s1.sort_values('date'), gdf_s2, suffixes=('', '_y'), on='date', direction='nearest', tolerance=pd.Timedelta('1M')).drop(['ismn_id_y','geometry_y' ], axis=1)
 	
 	
     # Calculate time difference between s1 date and ndvi date
@@ -790,6 +790,52 @@ def merge_s1_s2(gdf_s1, gdf_s2, driver, filepath):
     
     return print('Write :', filepath + name, ' succesfully to disk')
 
+def merge_sentinel_ismn(files, ismn_path):
+    """
+    Arguments: 
+    """
 
+    # Import modules
+    import geopandas as gpd
+    import pandas as pd
+    from ismn.interface import ISMN_Interface
+    from glob import glob
+
+	
+    # Path to data downloaded from ismn network in header+value composite
+    path_ismn_zip = ismn_path
+
+    # Either a .zip file or one folder that contains all networks, here we read from .zip
+    ismn_data = ISMN_Interface(path_ismn_zip, parallel=True)
+
+    for file in files:
+        # ismn id from filename
+        idx = int(file.split('\\')[-1].split('_')[0])
+        # metadata from ismn id
+        metadata = ismn_data.read_metadata(idx)
+
+        network = metadata.network.values[0]
+        station = metadata.station.values[0]
+        depth = metadata.variable.depth_from
+        clay = metadata.clay_fraction.val
+        sand = metadata.sand_fraction.val
+        silt = metadata.silt_fraction.val
+        oc = metadata.organic_carbon.val
+        climate = metadata.climate_KG.values[0]
+
+        # Time-Series data for ismn id #try to get soil, air temp. precipitation as well
+        ## In first case only implement stations with one sensor 
+        gdf_sm = gpd.GeoDataFrame(ismn_data.read_ts(idx)).reset_index().rename({'date_time' : 'date'}, axis=1)
+        gdf_sentinel = gpd.read_file(file)
+        gdf_sentinel['date'] = gdf_sentinel.date.astype('datetime64[ns]')
+        #gdf_ismn = gpd.GeoDataFrame(ismn_ts)
+        try:
+            gdf = pd.merge_asof(gdf_sentinel, gdf_sm, on='date', tolerance=pd.Timedelta("3h"), direction='nearest')
+            gdf.to_file(file)
+        except:
+            continue
+
+
+    return print('Added soil moisture data to gdf')
 if __name__ == "__main__":
     print("hea")
