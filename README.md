@@ -1,11 +1,16 @@
 # Irrigation Detection 
 This repository is part of a master-thesis. It contains scripts for downloading, preprocessing, classification and visualisation for irrigation detection purpose. Main part will be implementing of irrigation detection method from [Irrigation Events Detection over Intensively Irrigated Grassland Plots Using Sentinel-1 Data](https://doi.org/10.3390/rs12244058) in V1. and from [Near Real-Time Irrigation Detection at Plot Scale Using Sentinel-1 Data](https://www.mdpi.com/2072-4292/12/9/1456) in V2.
 
-Most functions used inside jupyter notebooks are stored in irrigation_detection.py . 
-
 This repository is under construction and functions may not work or be whack explained.
 
-To work with some of the functions you need a Google Earth Engine Account. You can apply [here](http://code.earthengine.google.com/)
+To use some functions additional Accounts are requiered:
+Google Earth Engine mainly for processing and downloading Satellite data. You can apply [here](http://code.earthengine.google.com/)
+International Soil Moisture Network to get in-situ soil moisture time series data. You can apply [here](https://ismn.geo.tuwien.ac.at/en/accounts/signup/) 
+
+
+Most functions used inside jupyter notebooks are stored in irrigation_detection.py .
+### irrigation_detection.py Functions so far (alphabetical):
+
 
 ## Notebooks
 ### 01_SSM_1km_V1 [Product Source | World](https://land.copernicus.eu/global/products/ssm)
@@ -42,7 +47,13 @@ Irrigation detection with data from 07_Sentinel_1_grd notebook
 Acces all exported datasets from previous notebooks. Actual: LTS, BDFL5, NDVI10Dmax, RADOLAN, SSM, EVAPO_R, EVAPO_P, ... . Subset data. Preprocess and merge
 
 ### 13_Visualize
-Load data from Irrigation_Detection_V1 notebook. Split into equal satellite groups. Matplotlib and hvplot plotting.
+ISMN Dashboard for interactive visualization of Sentinel 1&2 and soil moisture data. Load data from Irrigation_Detection_V1 notebook. Split into equal satellite groups. Matplotlib and hvplot plotting.
+
+### Ground_Trouth_data
+Extract TimeSeries data from ismn stations. Find corresponding Sentinel 1, Sentinel 2 and ERA5 pixels and extract all information to geojson file. Merge data and add in-situ soil moisture values closest to satellite derived data. 
+
+### CNN & CNN_MLP_Regression_soil_moisture
+Use Keras and Tensorflow to train a MLP regression model with Sentinel 1, Sentinel 2 and ERA 5 data. Visualize and Analyse trained model with test data.
 
 ### Irrigation_map_whr Not working!!
 Extract features from pdf file
