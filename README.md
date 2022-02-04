@@ -9,7 +9,30 @@ This repository is under construction and functions may not work or be whack exp
     
 
 Most functions used inside jupyter notebooks are stored in irrigation_detection.py .
-### irrigation_detection.py Functions so far (alphabetical):
+## irrigation_detection.py Functions so far (alphabetical):
+
+### add_ndvi(image, dateoffset=15)
+### download_NDVI_max(user, passwd, pathFTP, download_path)
+### download_evapo(from_year, to_year, download_path, real=True)
+### download_radolan_SF(from_year, to_year, download_path)
+### export_values(latitude, longitude, ds, name)
+### extract_evapo(path)
+### get_ERA5_ts(lon, lat, ismn_idx, start, end, red, scale, crs)
+### get_ismn_data(filepath, variable, min_depth, max_depth, landcover, network)
+### get_s1_grd_mean(path, start, end, outname, with_ndvi, dateoffset)
+### get_s1_ts(lon, lat, ismn_idx, start, end, pol, mode, res, red, scale, crs)
+### get_s2_ts(lon, lat, ismn_idx, start, end, red, scale, crs)
+### mask_by_landcover(image)
+### merge_s1_s2_era5(gdf_s1, gdf_s2, gdf_era5, driver, filepath)
+### merge_sentinel_ismn(files, ismn_path, driver, out)
+### open_NDVI(path)
+### open_evapo(path, real=True)
+### open_radolan_SF(path)
+### roi_ds(path, ds)
+### search_files(path, filetype)
+### subset_ds(path, ds)
+### unpack_radolan_SF(path)
+### unzip_ndvi(pathZip, pathData)
 
 
 ## Notebooks
