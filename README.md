@@ -5,6 +5,8 @@ Most functions used inside jupyter notebooks are stored in irrigation_detection.
 
 This repository is under construction and functions may not work or be whack explained.
 
+To work with some of the functions you need a Google Earth Engine Account. You can apply [here](http://code.earthengine.google.com/)
+
 ## Notebooks
 ### 01_SSM_1km_V1 [Product Source | World](https://land.copernicus.eu/global/products/ssm)
 Load daily .nc files in nested directories as xarray. Subset and mask out unrelevant regions. Apply conversation from digital to physical values.
