@@ -576,7 +576,7 @@ def get_s1_ts(lon, lat, ismn_idx, start, end, pol, mode, res, red, scale, crs):
 	
 	# Authenticate Google Earth Engine
 	try:
-		ee.Initialize()
+		ee.Initialize(opt_url='https://earthengine-highvolume.googleapis.com') # High Volume Endpoint
 	except:
 		# Trigger the authentication flow
 		ee.Authenticate()
@@ -633,105 +633,217 @@ def get_s1_ts(lon, lat, ismn_idx, start, end, pol, mode, res, red, scale, crs):
 	#Split date and time
 	#gdf['time'] = gdf['date'].dt.time
 	#gdf['date'] = gdf['date'].dt.date
-	
+	print('S1 data collection succseed!')
 	return gdf
 
 def get_s2_ts(lon, lat, ismn_idx, start, end, red, scale, crs):
-	"""
-	Arguments:
-	bla
-	"""
-	
-	# Import modules
-	import ee
-	from datetime import datetime
-	from shapely.geometry import Point
-	import geopandas as gpd
-	import pandas as pd
-	
-	#Authenticate to Google Earth Engine
-	try:
-		ee.Initialize()
-	except:
-		ee.Authenticate()
-		ee.Initialize()
-	
-	
-	# Create Point Geometry (Longitude/Latitude)
-	lon = lon
-	lat = lat
-	ismn_idx = ismn_idx #ISMN ID
-	poi = ee.Geometry.Point([lon,lat]) #GEE Geometry Object
-	poi_fc = ee.FeatureCollection(poi) #GEE FeatureCollection Object
-	
-	# Sentinel 2 Collection
-	# Filter Collection by Location
-	sentinel2 = ee.ImageCollection('COPERNICUS/S2').filterBounds(poi_fc)
-	# Filter by Date
-	sentinel2 = sentinel2.filterDate(start, end)
-	
-	
-	# Mask Clouds
-	def maskS2clouds(image):
-		qa = image.select('QA60')
-		# Bits 10 and 11 are clouds and cirrus, respectively
-		cloudBitMask = 1 << 10
-		cirrusBitMask = 1 << 11
-		# Set both to zero to have clear conditions
-		mask = qa.bitwiseAnd(cloudBitMask).eq(0).And(qa.bitwiseAnd(cirrusBitMask).eq(0))
-		# update image by masking pixel with cloud or cirrus and copy properties
-		return image.updateMask(mask).divide(10000).copyProperties(source=image)
-		
-	sentinel2 = sentinel2.map(maskS2clouds)
-	
-	
-	#Apply Reducer
-	ts = sentinel2.map(lambda x: x.reduceRegions(
-		reducer = 'mean',
-		collection = poi_fc,
-		scale = 10,  
-		crs = 'EPSG:4326'
-		)).flatten().getInfo()
-	
-	
-	#Aggregate data
-	img_id = [x['id'] for x in ts['features']]
-	ismn_id = [ismn_idx] * len(img_id)
-	date = [datetime.strptime(x['id'][:15], '%Y%m%dT%H%M%S') for x in ts['features']]
-	geometry = [Point(x['geometry']['coordinates']) for x in ts['features']]
-	Aerosols = [x['properties']['B1'] for x in ts['features']]
-	Blue = [x['properties']['B2'] for x in ts['features']]
-	Green = [x['properties']['B3'] for x in ts['features']]
-	Red = [x['properties']['B4'] for x in ts['features']]
-	RedEdge1 = [x['properties']['B5'] for x in ts['features']]
-	RedEdge2 = [x['properties']['B6'] for x in ts['features']]
-	RedEdge3 = [x['properties']['B7'] for x in ts['features']]
-	NIR = [x['properties']['B8'] for x in ts['features']]
-	RedEdge4 = [x['properties']['B8A'] for x in ts['features']]
-	WaterVapor = [x['properties']['B9'] for x in ts['features']]
-	Cirrus = [x['properties']['B10'] for x in ts['features']]
-	SWIR1 = [x['properties']['B11'] for x in ts['features']]
-	SWIR2 = [x['properties']['B12'] for x in ts['features']]
-	CloudMask = [x['properties']['QA60'] for x in ts['features']]
-	
-	
-	#Create Geopandas DataFrame
-	gdf = gpd.GeoDataFrame({'ismn_id' : ismn_id, 'date' : date, 'Aerosols' : Aerosols ,'Blue' : Blue, 'Green' : Green, 'Red' : Red, 'RedEdge1' : RedEdge1, 'RedEdge2' : RedEdge2, 'RedEdge3' : RedEdge3, 'RedEdge4' : RedEdge4, 'NIR' : NIR, 'WaterVapor' : WaterVapor, 'Cirrus' : Cirrus, 'SWIR1' : SWIR1, 'SWIR2' : SWIR2, 'CloudMask' : CloudMask, 'img_id' : img_id, 'geometry' : geometry})
+    """
+    Arguments:
+    bla
+    """
+    
+    # Import modules
+    import ee
+    from datetime import datetime
+    from shapely.geometry import Point
+    import geopandas as gpd
+    import pandas as pd
 
-	
-	# Tidy up
-	#delete raws with nan values and get mean for multiple granularies with same date
-	gdf = gdf.groupby(pd.Grouper(key='date',freq='d')).mean().dropna().reset_index()
-	# In Previous step geometry and ismn_id was dropped because the mean of geometry is not possible and ismn_id was float so add here again
-	gdf['ismn_id'] = [ismn_idx] * len(gdf)
-	gdf['geometry'] = [geometry[0]] * len(gdf)
-	
-	# Add Indices
-	gdf['NDVI'] = (gdf['NIR'] - gdf['Red']) / (gdf['NIR'] + gdf['Red'])
-	
-	return gdf
 
-def get_ismn_data(filepath, variable, min_depth, max_depth, landcover):
+    #Authenticate to Google Earth Engine
+    try:
+        ee.Initialize(opt_url='https://earthengine-highvolume.googleapis.com') #High Volume Endpoint
+    except:
+        ee.Authenticate()
+        ee.Initialize()
+
+    # Mask Clouds
+    def maskS2clouds(image):
+        qa = image.select('QA60')
+        # Bits 10 and 11 are clouds and cirrus, respectively
+        cloudBitMask = 1 << 10
+        cirrusBitMask = 1 << 11
+        # Set both to zero to have clear conditions
+        mask = qa.bitwiseAnd(cloudBitMask).eq(0).And(qa.bitwiseAnd(cirrusBitMask).eq(0))
+        # update image by masking pixel with cloud or cirrus and copy properties
+        return image.updateMask(mask).divide(10000).copyProperties(source=image)
+
+    # Create Point Geometry (Longitude/Latitude)
+    lon = lon
+    lat = lat
+    ismn_idx = ismn_idx #ISMN ID
+    poi = ee.Geometry.Point([lon,lat]) #GEE Geometry Object
+    poi_fc = ee.FeatureCollection(poi) #GEE FeatureCollection Object
+
+    # Sentinel 2 Collection
+    # Filter Collection by Location
+    sentinel2 = ee.ImageCollection('COPERNICUS/S2').filterBounds(poi_fc)
+
+    #Split daterange by half to overcome computation timeout
+    end_half = (int(end.split('-')[0]) - int(start.split('-')[0])) / 2
+    end_half = int(start[:4]) + end_half
+    end_half = end.replace(end[:4],str(end_half)[:4])
+
+    # Filter by Date Half 1/2
+    sentinel2_1 = sentinel2.filterDate(start, end_half)
+    sentinel2_1 = sentinel2_1.map(maskS2clouds)
+
+    # Apply Reducer
+    ts_half_1 = sentinel2_1.map(lambda x: x.reduceRegions(
+        reducer='mean',
+        collection=poi_fc,
+        scale=scale,
+        crs='EPSG:4326'
+    )).flatten().getInfo()
+    
+    # Filter by Date Half 2/2
+    sentinel2_2 = sentinel2.filterDate(end_half, end)
+    sentinel2_2 = sentinel2_2.map(maskS2clouds)
+
+    # Apply Reducer
+    ts_half_2 = sentinel2_2.map(lambda x: x.reduceRegions(
+        reducer='mean',
+        collection=poi_fc,
+        scale=scale,
+        crs='EPSG:4326'
+    )).flatten().getInfo()
+    
+    #merge both featurecollections
+    ts_half_1['features'].extend(ts_half_2['features'])
+    ts = ts_half_1
+	
+    #Aggregate data
+    img_id = [x['id'] for x in ts['features']]
+    ismn_id = [ismn_idx] * len(img_id)
+    date = [datetime.strptime(x['id'][:15], '%Y%m%dT%H%M%S') for x in ts['features']]
+    geometry = [Point(x['geometry']['coordinates']) for x in ts['features']]
+    Aerosols = [x['properties']['B1'] for x in ts['features']]
+    Blue = [x['properties']['B2'] for x in ts['features']]
+    Green = [x['properties']['B3'] for x in ts['features']]
+    Red = [x['properties']['B4'] for x in ts['features']]
+    RedEdge1 = [x['properties']['B5'] for x in ts['features']]
+    RedEdge2 = [x['properties']['B6'] for x in ts['features']]
+    RedEdge3 = [x['properties']['B7'] for x in ts['features']]
+    NIR = [x['properties']['B8'] for x in ts['features']]
+    RedEdge4 = [x['properties']['B8A'] for x in ts['features']]
+    WaterVapor = [x['properties']['B9'] for x in ts['features']]
+    Cirrus = [x['properties']['B10'] for x in ts['features']]
+    SWIR1 = [x['properties']['B11'] for x in ts['features']]
+    SWIR2 = [x['properties']['B12'] for x in ts['features']]
+    CloudMask = [x['properties']['QA60'] for x in ts['features']]
+    
+    
+    #Create Geopandas DataFrame
+    gdf = gpd.GeoDataFrame({'ismn_id' : ismn_id, 'date' : date, 'Aerosols' : Aerosols ,'Blue' : Blue, 'Green' : Green, 'Red' : Red, 'RedEdge1' : RedEdge1, 'RedEdge2' : RedEdge2, 'RedEdge3' : RedEdge3, 'RedEdge4' : RedEdge4, 'NIR' : NIR, 'WaterVapor' : WaterVapor, 'Cirrus' : Cirrus, 'SWIR1' : SWIR1, 'SWIR2' : SWIR2, 'CloudMask' : CloudMask, 'img_id' : img_id, 'geometry' : geometry})
+
+    
+    # Tidy up
+    #delete raws with nan values and get mean for multiple granularies with same date
+    gdf = gdf.groupby(pd.Grouper(key='date',freq='d')).mean().dropna().reset_index()
+    # In Previous step geometry and ismn_id was dropped because the mean of geometry is not possible and ismn_id was float so add here again
+    gdf['ismn_id'] = [ismn_idx] * len(gdf)
+    gdf['geometry'] = [geometry[0]] * len(gdf)
+    
+    # Add Indices
+    gdf['NDVI'] = (gdf['NIR'] - gdf['Red']) / (gdf['NIR'] + gdf['Red'])
+    print('S2 data collection sucseed!')
+    return gdf
+def get_ERA5_ts(lon, lat, ismn_idx, start, end, red, scale, crs):
+    """
+    Arguments:
+    bla
+    """
+
+    # Import modules
+    import ee
+    from datetime import datetime
+    from shapely.geometry import Point
+    import geopandas as gpd
+    import pandas as pd
+
+    # Authenticate to Google Earth Engine 
+    try:
+        ee.Initialize(opt_url='https://earthengine-highvolume.googleapis.com') #High volume endpoint
+    except:
+        ee.Authenticate()
+        ee.Initialize()
+
+    # Create Point Geometry (Longitude/Latitude)
+    lon = lon
+    lat = lat
+    ismn_idx = ismn_idx  # ISMN ID
+    poi = ee.Geometry.Point([lon, lat])  # GEE Geometry Object
+    poi_fc = ee.FeatureCollection(poi)  # GEE FeatureCollection Object
+
+    # ERA5 Collection
+    # Filter Collection by Location
+    era5 = ee.ImageCollection('ECMWF/ERA5/DAILY').filterBounds(poi_fc)
+	
+	#Split daterange by half to overcome computation timeout
+    end_half = (int(end.split('-')[0]) - int(start.split('-')[0])) / 2
+    end_half = int(start[:4]) + end_half
+    end_half = end.replace(end[:4],str(end_half)[:4])
+	
+    # Filter by Date Half 1/2
+    era5_1 = era5.filterDate(start, end_half)
+
+    # Apply Reducer
+    ts_half_1 = era5_1.map(lambda x: x.reduceRegions(
+        reducer='first',
+        collection=poi_fc,
+        scale=scale,
+        crs='EPSG:4326'
+    )).flatten().getInfo()
+    
+    # Filter by Date Half 2/2
+    era5_2 = era5.filterDate(end_half, end)
+
+    # Apply Reducer
+    ts_half_2 = era5_2.map(lambda x: x.reduceRegions(
+        reducer='mean',
+        collection=poi_fc,
+        scale=scale,
+        crs='EPSG:4326'
+    )).flatten().getInfo()
+    
+    #merge both featurecollections
+    ts_half_1['features'].extend(ts_half_2['features'])
+    ts = ts_half_1
+	
+	# Aggregate data
+    img_id = [x['id'] for x in ts['features']]
+    ismn_id = [ismn_idx] * len(img_id)
+    date = [datetime.strptime(x['id'].split('/')[-1].split('_')[0], '%Y%m%d')
+            for x in ts['features']]
+    geometry = [Point(x['geometry']['coordinates']) for x in ts['features']]
+    dewpoint_2m_temperature = [x['properties']['dewpoint_2m_temperature'] for x in ts['features']]
+    maximum_2m_air_temperature = [x['properties']['maximum_2m_air_temperature'] for x in ts['features']]
+    mean_2m_air_temperature = [x['properties']['mean_2m_air_temperature'] for x in ts['features']]
+    minimum_2m_air_temperature = [x['properties']['minimum_2m_air_temperature'] for x in ts['features']]
+    surface_pressure = [x['properties']['surface_pressure'] for x in ts['features']]
+    total_precipitation = [x['properties']['total_precipitation'] for x in ts['features']]
+    u_component_of_wind_10m = [x['properties']['u_component_of_wind_10m'] for x in ts['features']]
+    v_component_of_wind_10m = [x['properties']['v_component_of_wind_10m'] for x in ts['features']]
+
+    # Create Geopandas DataFrame
+    gdf = gpd.GeoDataFrame({'ismn_id': ismn_id, 
+                            'date': date, 
+                            'dewpoint_2m_temperature': dewpoint_2m_temperature, 
+                            'maximum_2m_air_temperature': maximum_2m_air_temperature, 
+                            'mean_2m_air_temperature': mean_2m_air_temperature, 
+                            'minimum_2m_air_temperature': minimum_2m_air_temperature, 
+                            'surface_pressure': surface_pressure, 
+                            'total_precipitation': total_precipitation, 
+                            'u_component_of_wind_10m': u_component_of_wind_10m,
+                            'u_component_of_wind_10m': u_component_of_wind_10m, 
+                            'v_component_of_wind_10m': v_component_of_wind_10m, 
+                            'img_id': img_id, 
+                            'geometry': geometry})
+
+    # Tidy up
+    print('ERA5 data collection sucseed!')
+    return gdf
+def get_ismn_data(filepath, variable, min_depth, max_depth, landcover, network):
 	"""
 	Arguments
 	"""
@@ -749,8 +861,10 @@ def get_ismn_data(filepath, variable, min_depth, max_depth, landcover):
 
 
 	# Select specific stations or networks
-	ids = ismn_data.get_dataset_ids(variable = variable, min_depth = min_depth, max_depth = max_depth ,filter_meta_dict={'lc_2005': landcover}) 
-	
+	if network:
+	    ids = ismn_data.get_dataset_ids(variable = variable, min_depth = min_depth, max_depth = max_depth ,filter_meta_dict={'lc_2005': landcover, 'network' : network} ) 
+	else:
+	    ids = ismn_data.get_dataset_ids(variable = variable, min_depth = min_depth, max_depth = max_depth ,filter_meta_dict={'lc_2005': landcover} ) 
 	# Read Station data for selected stations 
 	ts = [ismn_data.read(x ,return_meta=True) for x in ids]
 	
@@ -764,7 +878,7 @@ def get_ismn_data(filepath, variable, min_depth, max_depth, landcover):
 	return ts, ismn_loi, ismn_loi_unique
 
 
-def merge_s1_s2(gdf_s1, gdf_s2, driver, filepath):
+def merge_s1_s2_era5(gdf_s1, gdf_s2, gdf_era5, driver, filepath):
     """
     Arguments:
     """
@@ -777,9 +891,9 @@ def merge_s1_s2(gdf_s1, gdf_s2, driver, filepath):
     gdf_s2['date_y'] = gdf_s2.date
     
     # Merge ndvi value to closest s1 date
-    gdf = pd.merge_asof(gdf_s1.sort_values('date'), gdf_s2, suffixes=('', '_y'), on='date', direction='nearest', tolerance=pd.Timedelta('1M')).drop(['ismn_id_y','geometry_y' ], axis=1)
-	
-	
+    gdf = pd.merge_asof(gdf_s1.sort_values('date'), gdf_s2, suffixes=('', '_y'), on='date', direction='nearest', tolerance=pd.Timedelta('31d')).drop(['ismn_id_y','geometry_y' ], axis=1)
+    gdf = pd.merge_asof(gdf.sort_values('date'), gdf_era5, suffixes=('', '_y'), on='date', direction='nearest', tolerance=pd.Timedelta('1d')).drop(['ismn_id_y', 'geometry_y'], axis=1)
+
     # Calculate time difference between s1 date and ndvi date
     gdf['s2_distance'] = gdf['date'] - gdf['date_y']
     gdf['s2_distance'] = gdf['s2_distance'].dt.days
@@ -790,7 +904,7 @@ def merge_s1_s2(gdf_s1, gdf_s2, driver, filepath):
     
     return print('Write :', filepath + name, ' succesfully to disk')
 
-def merge_sentinel_ismn(files, ismn_path):
+def merge_sentinel_ismn(files, ismn_path, driver, out):
     """
     Arguments: 
     """
@@ -813,25 +927,40 @@ def merge_sentinel_ismn(files, ismn_path):
         idx = int(file.split('\\')[-1].split('_')[0])
         # metadata from ismn id
         metadata = ismn_data.read_metadata(idx)
-
-        network = metadata.network.values[0]
-        station = metadata.station.values[0]
-        depth = metadata.variable.depth_from
-        clay = metadata.clay_fraction.val
-        sand = metadata.sand_fraction.val
-        silt = metadata.silt_fraction.val
-        oc = metadata.organic_carbon.val
-        climate = metadata.climate_KG.values[0]
-
+        
+        try:
+            network = metadata.network.values[0]
+            station = metadata.station.values[0]
+            depth = metadata.variable.depth_from
+            clay = metadata.clay_fraction.val
+            sand = metadata.sand_fraction.val
+            silt = metadata.silt_fraction.val
+            oc = metadata.organic_carbon.val
+            climate = metadata.climate_KG.values[0]
+            elevation = metadata.elevation.values[0]
+            instrument = metadata.instrument.val
+        except:
+            print(idx,' cant get all metadata')
+            continue
+        
         # Time-Series data for ismn id #try to get soil, air temp. precipitation as well
         ## In first case only implement stations with one sensor 
         gdf_sm = gpd.GeoDataFrame(ismn_data.read_ts(idx)).reset_index().rename({'date_time' : 'date'}, axis=1)
+        gdf_sm['network'] = [network] * len(gdf_sm)
+        gdf_sm['station'] = [station] * len(gdf_sm)
+        gdf_sm['clay'] = [clay] * len(gdf_sm)
+        gdf_sm['sand'] = [sand] * len(gdf_sm)
+        gdf_sm['silt'] = [silt] * len(gdf_sm)
+        gdf_sm['oc'] = [oc] * len(gdf_sm)
+        gdf_sm['climate'] = [climate] * len(gdf_sm)
+        gdf_sm['elevation'] = [elevation] * len(gdf_sm)
+        gdf_sm['instrument'] = [instrument] * len(gdf_sm)
         gdf_sentinel = gpd.read_file(file)
         gdf_sentinel['date'] = gdf_sentinel.date.astype('datetime64[ns]')
         #gdf_ismn = gpd.GeoDataFrame(ismn_ts)
         try:
             gdf = pd.merge_asof(gdf_sentinel, gdf_sm, on='date', tolerance=pd.Timedelta("3h"), direction='nearest')
-            gdf.to_file(file)
+            gdf.to_file(out + file.split('\\')[-1], driver = driver)
         except:
             continue
 
