@@ -6,8 +6,9 @@ This repository is under construction and functions may not work or be whack exp
 Most functions used inside jupyter_notebooks/... are stored in irrigation_detection.py .
 
 ### To use some functions additional Accounts are requiered:    
-#### Google Earth Engine mainly for processing and downloading Satellite data. You can apply [here](http://code.earthengine.google.com/)   
-#### International Soil Moisture Network to get in-situ soil moisture time series data. You can apply [here](https://ismn.geo.tuwien.ac.at/en/accounts/signup/)    
+Google Earth Engine mainly for processing and downloading Satellite data. You can apply [here](http://code.earthengine.google.com/)   
+
+International Soil Moisture Network to get in-situ soil moisture time series data. You can apply [here](https://ismn.geo.tuwien.ac.at/en/accounts/signup/)    
     
 ## Notebooks inside jupyter_notebooks folder:
 ### 01_SSM_1km_V1 [Product Source | World](https://land.copernicus.eu/global/products/ssm)
