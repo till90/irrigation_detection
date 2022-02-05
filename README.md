@@ -3,7 +3,7 @@ This repository is part of a master-thesis. It contains scripts for downloading,
 
 This repository is under construction and functions may not work or be whack explained.
 
-Most functions used inside jupyter notebooks are stored in irrigation_detection.py .
+Most functions used inside jupyter_notebooks/... are stored in irrigation_detection.py .
 
 ### To use some functions additional Accounts are requiered:    
 #### Google Earth Engine mainly for processing and downloading Satellite data. You can apply [here](http://code.earthengine.google.com/)   
