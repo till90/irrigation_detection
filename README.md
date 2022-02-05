@@ -25,10 +25,10 @@ Preprocess LUCAS TOPSOIL 2015 and 2009 Datasets. Merge to Geopandas GeoDataFrame
 ### 05_BDFL5 [Product Source | Hessen](https://www.hlnug.de/fileadmin/dokumente/boden/BFD5L/methoden/m46.html) - [Product Source | RLP](https://www.geoportal.rlp.de/linked_open_data/)
 Preprocess Soil Information dataset. Spatial join with LUCAS TOPSOIL data. Subset and Export data.
 
-### 06_Evapo_rel_pot[Product Source | Germany](https://opendata.dwd.de/climate_environment/CDC/grids_germany/daily/)
+### 06_Evapo_rel_pot [Product Source | Germany](https://opendata.dwd.de/climate_environment/CDC/grids_germany/daily/)
 Download potentiel and real Evaporation. Transform projection with Gdal. Load extracted files to xarray. Subset data. Apply conversation from digital to physical values
 
-### 07_Sentinel_1_grd[Product Source | World](https://developers.google.com/s/results/earth-engine/datasets?q=sentinel%20)
+### 07_Sentinel_1_grd [Product Source | World](https://developers.google.com/s/results/earth-engine/datasets?q=sentinel%20)
 Use Earth Engine Cloudcomputing. Get Sentinel - 1 GRD VV Mean for geometry while masking high NDVI values. Construct Geopandas GeoDataFrame and add all Information from filename.SWI map expors. Extract data for plot and grid size
 
 ### Export_ImageCollection_fromGee
