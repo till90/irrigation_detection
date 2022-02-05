@@ -97,7 +97,7 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [Soil Moisture Network ISMN | global in-situ soil moisture database](https://ismn.geo.tuwien.ac.at/en/)
 
-[THEIA IRSTEA SOIL MOISTURE CATALOG | radar signal inversion algorithm uses neural networks(https://thisme.cines.teledetection.fr/home)
+[THEIA IRSTEA SOIL MOISTURE CATALOG | radar signal inversion algorithm uses neural networks](https://thisme.cines.teledetection.fr/home)
 
 ### Remote Sensing
 
