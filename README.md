@@ -124,9 +124,13 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 ### Machine learning, Classification, Statistics
 
+[TensorFlow | open source library to help you develop and train ML models](https://www.tensorflow.org)
+
+[Keras | High level API for TensorFlow](https://keras.io/)
+
 [tslearn | machine learning tools for time series data](https://tslearn.readthedocs.io/en/stable/)
 
-[tsfresh | automatically calculates a large number of time series characteristic features(https://tsfresh.readthedocs.io/en/latest/)
+[tsfresh | automatically calculates a large number of time series characteristic features](https://tsfresh.readthedocs.io/en/latest/)
 
 
 ### Soil Moisture
