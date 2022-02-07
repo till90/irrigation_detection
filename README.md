@@ -74,7 +74,13 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [Google Earth Engine | Geopsatial big data computing with many datasets](https://code.earthengine.google.com/)
 
-[geojson.io | tool for creating, viewing, and sharing maps](http://geojson.io/#map=2/20.0/0.0)
+[geojson.io | Tool for draw, view, and sharing geometrical features online](http://geojson.io/#map=2/20.0/0.0)
+
+[TablesGenerator.com | LaTeX and HTML table generator](https://www.tablesgenerator.com/)
+
+[Overleaf | Online collaborative writing and publishing tool with LaTeX enviroment](https://www.overleaf.com)
+
+[doi2bib | DOI to BibTeX entry](https://www.doi2bib.org/)
 
 ## Data
 
