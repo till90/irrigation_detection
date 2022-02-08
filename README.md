@@ -136,6 +136,7 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [tsfresh | automatically calculates a large number of time series characteristic features](https://tsfresh.readthedocs.io/en/latest/)
 
+[sktime | framework for machine learning with time series](https://www.sktime.org/en/stable/)
 
 ### Soil Moisture
 
