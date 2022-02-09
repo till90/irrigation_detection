@@ -843,9 +843,10 @@ def get_ERA5_ts(lon, lat, ismn_idx, start, end, red, scale, crs):
     # Tidy up
     print('ERA5 data collection sucseed!')
     return gdf
-def get_ismn_data(filepath, variable, min_depth, max_depth, landcover, network):
+def get_ismn_data(filepath, variable, min_depth, max_depth, landcover, network, station):
 	"""
 	Arguments
+	output: ts, ismn_loi, ismn_loi_unique
 	"""
 	
 	# Import modules
@@ -858,13 +859,19 @@ def get_ismn_data(filepath, variable, min_depth, max_depth, landcover, network):
 	
 	# Either a .zip file or one folder that contains all networks, here we read from .zip
 	ismn_data = ISMN_Interface(filepath, parallel=True)
-
+	
+	if landcover is None:
+	    landcover = list(ismn_data.landcover)
+		
+	if network is None:
+	    network = ismn_data.list_networks()
+	
+	if station is None:
+	    station = ismn_data.list_stations()
 
 	# Select specific stations or networks
-	if network:
-	    ids = ismn_data.get_dataset_ids(variable = variable, min_depth = min_depth, max_depth = max_depth ,filter_meta_dict={'lc_2005': landcover, 'network' : network} ) 
-	else:
-	    ids = ismn_data.get_dataset_ids(variable = variable, min_depth = min_depth, max_depth = max_depth ,filter_meta_dict={'lc_2005': landcover} ) 
+	ids = ismn_data.get_dataset_ids(variable = variable, min_depth = min_depth, max_depth = max_depth ,filter_meta_dict={'lc_2005': landcover, 'network' : network, 'station' : station} ) 
+	
 	# Read Station data for selected stations 
 	ts = [ismn_data.read(x ,return_meta=True) for x in ids]
 	
@@ -875,7 +882,7 @@ def get_ismn_data(filepath, variable, min_depth, max_depth, landcover, network):
 		ismn_loi.append([meta.longitude.values[0],meta.latitude.values[0], ismn_id])
 	ismn_loi_unique = pd.DataFrame(ismn_loi).drop_duplicates(subset=[0,1]).values
 	
-	return ts, ismn_loi, ismn_loi_unique
+	return ts, ismn_loi, ismn_loi_unique, ismn_data
 
 
 def merge_s1_s2_era5(gdf_s1, gdf_s2, gdf_era5, driver, filepath):
@@ -892,7 +899,7 @@ def merge_s1_s2_era5(gdf_s1, gdf_s2, gdf_era5, driver, filepath):
     
     # Merge ndvi value to closest s1 date
     gdf = pd.merge_asof(gdf_s1.sort_values('date'), gdf_s2, suffixes=('', '_y'), on='date', direction='nearest', tolerance=pd.Timedelta('31d')).drop(['ismn_id_y','geometry_y' ], axis=1)
-    gdf = pd.merge_asof(gdf.sort_values('date'), gdf_era5, suffixes=('', '_y'), on='date', direction='nearest', tolerance=pd.Timedelta('1d')).drop(['ismn_id_y', 'geometry_y'], axis=1)
+    gdf = pd.merge_asof(gdf.sort_values('date'), gdf_era5, suffixes=('', '_y'), on='date', direction='nearest', tolerance=pd.Timedelta('1d')).drop(['ismn_id_y', 'geometry_y', 'img_id_y', 'date_y'], axis=1)
 
     # Calculate time difference between s1 date and ndvi date
     gdf['s2_distance'] = gdf['date'] - gdf['date_y']
