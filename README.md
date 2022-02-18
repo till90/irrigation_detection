@@ -126,6 +126,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [Geopandas | geospatial data handling](https://geopandas.org/en/stable/)
 
+[satpy | reading, manipulating, and writing data from satellite instruments](https://satpy.readthedocs.io/en/stable/)
+
 ### Machine learning, Classification, Statistics
 
 [TensorFlow | open source library to help you develop and train ML models](https://www.tensorflow.org)
@@ -139,6 +141,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 [tsfresh | Automatically Calculates a large number of time series characteristic features](https://tsfresh.readthedocs.io/en/latest/)
 
 [sktime | Framework for Machine Learning with time series](https://www.sktime.org/en/stable/)
+
+[GeostatsPy | Geostatistical library](https://github.com/GeostatsGuy/GeostatsPy)
 
 ### Soil Moisture
 
