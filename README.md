@@ -132,11 +132,13 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [Keras | High level API for TensorFlow](https://keras.io/)
 
-[tslearn | machine learning tools for time series data](https://tslearn.readthedocs.io/en/stable/)
+[STUMPY | Modern Time Series Analysis with Matrix Profile](https://stumpy.readthedocs.io/en/latest/index.html)
 
-[tsfresh | automatically calculates a large number of time series characteristic features](https://tsfresh.readthedocs.io/en/latest/)
+[tslearn | Machine Learning Tools for Time Series Data](https://tslearn.readthedocs.io/en/stable/)
 
-[sktime | framework for machine learning with time series](https://www.sktime.org/en/stable/)
+[tsfresh | Automatically Calculates a large number of time series characteristic features](https://tsfresh.readthedocs.io/en/latest/)
+
+[sktime | Framework for Machine Learning with time series](https://www.sktime.org/en/stable/)
 
 ### Soil Moisture
 
