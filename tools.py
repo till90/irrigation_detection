@@ -25,5 +25,36 @@ def group_features(df, feature_label):
     # List comprehesnion for splitting into seperated dfs according to feature label
     return [df[df[feature_label] == x] for x in df[feature_label]]
 
+
+def add_group_label(df, col_name):
+    """Adds group label according of orbit and platform
+
+    Args:
+        df (_type_): _description_
+        col_name (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    import pandas as pd
+    group = list()
+
+    for row in df.itertuples():
+        
+        
+        if row.platform == 'A' and row.orbit == 'DESCENDING':
+            group.append(1)
+        elif row.platform == 'B' and row.orbit == 'DESCENDING':
+            group.append(2)
+        elif row.platform == 'A' and row.orbit == 'ASCENDING':
+            group.append(3)
+        else:# row.platform == 'B' and row.orbit == 'ASCENDING':
+            group.append(4)
+        
+    df[col_name] = group
+    return df
+
+
 if __name__ == "__main__":
     print("hea")
+    
