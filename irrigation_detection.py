@@ -562,7 +562,7 @@ def mask_by_landcover(image):
     mask = image.eq(40).Or(image.eq(30))
     return image.updateMask(mask)
 
-def get_s1_ts(lon, lat, ismn_idx, start, end, pol, mode, res, red, scale, crs):
+def get_s1_ts(lon, lat, ismn_idx, start, end, pol, mode, res, red, scale, crs, get_grid_scale, idx_name):
 	"""
 	Arguments: lon=longitude, lat = latitude, ismn_idx = ismn_id, start=start date, end= end date, pol=polarizaion(VV, VH, [VV, VH, HV,...], mode= [IW, SW], res=resolution[10,20,30], red=reducer['first, mean, median'], scale=scale for reducer, crs=crs for reducer, must be same as for lat/lon
 	Get Sentinel 1 GRD Time Series for lat/lon with Metadata as GeopandasGeoDataFrame
@@ -589,7 +589,11 @@ def get_s1_ts(lon, lat, ismn_idx, start, end, pol, mode, res, red, scale, crs):
 	lat = lat
 	ismn_idx = ismn_idx #ISMN ID
 	poi = ee.Geometry.Point([lon,lat]) #GEE Geometry Object
-	poi_fc = ee.FeatureCollection(poi) #GEE FeatureCollection Object
+	poi_fc = ee.FeatureCollection(poi)
+	
+	if get_grid_scale == True:
+		poi_fc = ee.FeatureCollection(poi_fc.geometry().buffer(5000))	 
+
 	
 	
 	# Sentinel 1 Collection
@@ -627,16 +631,12 @@ def get_s1_ts(lon, lat, ismn_idx, start, end, pol, mode, res, red, scale, crs):
 	
 	
 	# Create GeopandasDataFrame
-	gdf = gpd.GeoDataFrame({'ismn_id' : ismn_id, 'date' : date, 'platform' : platform, 'orbit' : orbit, 'VV' : VV, 'VH' : VH, 'angle' : angle, 'img_id' : img_id, 'geometry' : geometry})
+	gdf = gpd.GeoDataFrame({idx_name : ismn_id, 'date' : date, 'platform' : platform, 'orbit' : orbit, 'VV' : VV, 'VH' : VH, 'angle' : angle, 'img_id' : img_id, 'geometry' : geometry})
 	
-	# Tidy up
-	#Split date and time
-	#gdf['time'] = gdf['date'].dt.time
-	#gdf['date'] = gdf['date'].dt.date
 	print('S1 data collection succseed!')
 	return gdf
 
-def get_s2_ts(lon, lat, ismn_idx, start, end, red, scale, crs):
+def get_s2_ts(lon, lat, ismn_idx, start, end, red, scale, crs, idx_name):
     """
     Arguments:
     bla
@@ -734,21 +734,21 @@ def get_s2_ts(lon, lat, ismn_idx, start, end, red, scale, crs):
     
     
     #Create Geopandas DataFrame
-    gdf = gpd.GeoDataFrame({'ismn_id' : ismn_id, 'date' : date, 'Aerosols' : Aerosols ,'Blue' : Blue, 'Green' : Green, 'Red' : Red, 'RedEdge1' : RedEdge1, 'RedEdge2' : RedEdge2, 'RedEdge3' : RedEdge3, 'RedEdge4' : RedEdge4, 'NIR' : NIR, 'WaterVapor' : WaterVapor, 'Cirrus' : Cirrus, 'SWIR1' : SWIR1, 'SWIR2' : SWIR2, 'CloudMask' : CloudMask, 'img_id' : img_id, 'geometry' : geometry})
+    gdf = gpd.GeoDataFrame({idx_name : ismn_id, 'date' : date, 'Aerosols' : Aerosols ,'Blue' : Blue, 'Green' : Green, 'Red' : Red, 'RedEdge1' : RedEdge1, 'RedEdge2' : RedEdge2, 'RedEdge3' : RedEdge3, 'RedEdge4' : RedEdge4, 'NIR' : NIR, 'WaterVapor' : WaterVapor, 'Cirrus' : Cirrus, 'SWIR1' : SWIR1, 'SWIR2' : SWIR2, 'CloudMask' : CloudMask, 'img_id' : img_id, 'geometry' : geometry})
 
     
     # Tidy up
     #delete raws with nan values and get mean for multiple granularies with same date
     gdf = gdf.groupby(pd.Grouper(key='date',freq='d')).mean().dropna().reset_index()
     # In Previous step geometry and ismn_id was dropped because the mean of geometry is not possible and ismn_id was float so add here again
-    gdf['ismn_id'] = [ismn_idx] * len(gdf)
+    gdf[idx_name] = [ismn_idx] * len(gdf)
     gdf['geometry'] = [geometry[0]] * len(gdf)
     
     # Add Indices
     gdf['NDVI'] = (gdf['NIR'] - gdf['Red']) / (gdf['NIR'] + gdf['Red'])
     print('S2 data collection sucseed!')
     return gdf
-def get_ERA5_ts(lon, lat, ismn_idx, start, end, red, scale, crs):
+def get_ERA5_ts(lon, lat, ismn_idx, start, end, red, scale, crs, idx_name):
     """
     Arguments:
     bla
@@ -826,7 +826,7 @@ def get_ERA5_ts(lon, lat, ismn_idx, start, end, red, scale, crs):
     v_component_of_wind_10m = [x['properties']['v_component_of_wind_10m'] for x in ts['features']]
 
     # Create Geopandas DataFrame
-    gdf = gpd.GeoDataFrame({'ismn_id': ismn_id, 
+    gdf = gpd.GeoDataFrame({idx_name: ismn_id, 
                             'date': date, 
                             'dewpoint_2m_temperature': dewpoint_2m_temperature, 
                             'maximum_2m_air_temperature': maximum_2m_air_temperature, 
@@ -885,7 +885,7 @@ def get_ismn_data(filepath, variable, min_depth, max_depth, landcover, network, 
 	return ts, ismn_loi, ismn_loi_unique, ismn_data
 
 
-def merge_s1_s2_era5(gdf_s1, gdf_s2, gdf_era5, driver, filepath):
+def merge_s1_s2_era5(gdf_s1, gdf_s2, gdf_era5, driver, filepath, idx_name):
     """
     Arguments:
     """
@@ -898,17 +898,18 @@ def merge_s1_s2_era5(gdf_s1, gdf_s2, gdf_era5, driver, filepath):
     gdf_s2['date_y'] = gdf_s2.date
     
     # Merge ndvi value to closest s1 date
-    gdf = pd.merge_asof(gdf_s1.sort_values('date'), gdf_s2, suffixes=('', '_y'), on='date', direction='nearest', tolerance=pd.Timedelta('31d')).drop(['ismn_id_y','geometry_y' ], axis=1)
-    gdf = pd.merge_asof(gdf.sort_values('date'), gdf_era5, suffixes=('', '_y'), on='date', direction='nearest', tolerance=pd.Timedelta('1d')).drop(['ismn_id_y', 'geometry_y', 'img_id_y', 'date_y'], axis=1)
+    gdf = pd.merge_asof(gdf_s1.sort_values('date'), gdf_s2, suffixes=('', '_y'), on='date', direction='nearest', tolerance=pd.Timedelta('31d')).drop([idx_name + '_y','geometry_y' ], axis=1)
+    gdf = pd.merge_asof(gdf.sort_values('date'), gdf_era5, suffixes=('', '_y'), on='date', direction='nearest', tolerance=pd.Timedelta('1d')).drop([idx_name + '_y', 'geometry_y', 'img_id_y'], axis=1)
 
     # Calculate time difference between s1 date and ndvi date
     gdf['s2_distance'] = gdf['date'] - gdf['date_y']
     gdf['s2_distance'] = gdf['s2_distance'].dt.days
     
     #Write GeodataFrame to file as geojson
-    name = str(gdf.iloc[0].ismn_id) + '_' + str(gdf.iloc[0].geometry.x) + '_' + str(gdf.iloc[0].geometry.y) + '.geojson'
+    name = idx_name + '_' + str(gdf.iloc[0][idx_name]) + '_' + str(gdf.iloc[0].geometry.x) + '_' + str(gdf.iloc[0].geometry.y) + '.geojson'
     gdf.to_file(filename = filepath + name, driver = driver)
     
+	
     return print('Write :', filepath + name, ' succesfully to disk')
 
 def merge_sentinel_ismn(files, ismn_path, driver, out):
@@ -973,5 +974,271 @@ def merge_sentinel_ismn(files, ismn_path, driver, out):
 
 
     return print('Added soil moisture data to gdf')
+	
+def get_s1_s2_era5_df(longitudes, latitudes, ids, start, end, filepath, scale_s1, scale_s2, scale_era5, idx_name, get_grid_scale):
+    """
+    Arguments: 
+    """
+    
+    from irrigation_detection import get_s1_ts
+    from irrigation_detection import get_s2_ts
+    from irrigation_detection import get_ERA5_ts
+    from irrigation_detection import merge_s1_s2_era5
+    from glob import glob
+    failed_ids = list()
+    for num, (lon,lat, idx) in enumerate(zip(longitudes, latitudes, ids)):
+        print(f'Download Sentinel 1 & Sentinel 2 & ERA5 data for longitude: {lon}, latitude: {lat}, Item: {num}/{len(latitudes) - 1}')
+        try:
+            gdf_s1 = get_s1_ts(
+                lon = lon, 
+                lat = lat, 
+                ismn_idx = int(idx), 
+                start = start, 
+                end = end, 
+                pol = 'VV', 
+                mode = 'IW', 
+                res = 10, 
+                red = 'mean',
+                scale = scale_s1,
+                crs = 'EPSG:4326',
+                idx_name = idx_name,
+                get_grid_scale = get_grid_scale
+            )
+
+            gdf_s2 = get_s2_ts(
+                lon = lon, 
+                lat = lat, 
+                ismn_idx = int(idx), 
+                start = start, 
+                end = end, 
+                red = 'mean',
+                scale = scale_s2,
+                crs = 'EPSG:4326',
+                idx_name = idx_name
+            )
+
+            gdf_era5 = get_ERA5_ts(
+                lon = lon, 
+                lat = lat, 
+                ismn_idx = int(idx), 
+                start = start, 
+                end = end, 
+                red = 'first',
+                scale = scale_era5,
+                crs = 'EPSG:4326',
+                idx_name = idx_name
+            )
+
+            merge_s1_s2_era5(
+                gdf_s1 = gdf_s1,
+                gdf_s2 = gdf_s2,
+                gdf_era5 = gdf_era5,
+                driver = 'GeoJSON',
+                filepath = filepath,
+                idx_name = idx_name
+            )
+        except Exception as e:
+            print(e)
+            print('Failed to download!')
+            failed_ids.append(zip(longitudes, latitudes))
+    
+    return print(f'Finish downloads... failed to download {failed_ids}')
+        
+def get_s1_plot_grid_scale(path, start, end, outname, with_ndvi, ndvi_threshold, dateoffset, grid_to_dataframe, lon, lat):
+    """
+    Save a gejson to drive 
+    Arguments: path to gejson featurecollection, start date, end date, outname, with_ndvi 'yes' or 'no', dateoffset (int) while finding correspnding ndvi values to s1 images
+    """
+    # Import modules.
+    import ee
+
+    try:
+        # Initialize the library.
+        ee.Initialize(opt_url='https://earthengine-highvolume.googleapis.com')
+    except:
+        # Trigger the authentication flow.
+        ee.Authenticate()
+        # Initialize the library.
+        ee.Initialize()
+    import geojson
+    import geopandas as gpd
+    import pandas as pd
+    from shapely.geometry import Point
+    from glob import glob
+    import os
+    from datetime import datetime, timedelta
+    import geemap.eefolium as geemap
+    from tqdm import tqdm
+    import geemap
+    import time
+    
+    # Functions.
+    # Calculate coverage in km²
+    def get_area(image):
+        # Count the non zero/null pixels in the image within the aoi
+        actPixels = ee.Number(image.select('VV').reduceRegion(reducer= ee.Reducer.count(),scale= 10,geometry= fc_aoi.union().geometry(), maxPixels= 999999999).values().get(0))
+        # calculate the perc of cover
+        pcPix = actPixels.multiply(100).divide(1000000)
+        return image.set('area', pcPix)
+    
+    #NDVI
+    def add_ndvi(image):
+        """
+        Arguments: 
+        """
+        def maskS2clouds(image):
+            qa = image.select('QA60')
+            #Bits 10 and 11 are clouds and cirrus, respectively.
+            cloudBitMask = 1 << 10
+            cirrusBitMask = 1 << 11
+            #Both flags should be set to zero, indicating clear conditions.
+            mask = qa.bitwiseAnd(cloudBitMask).eq(0).And(qa.bitwiseAnd(cirrusBitMask).eq(0))
+            return image.updateMask(mask).divide(10000)
+
+        def NDVI(image):
+            ndvi = image.normalizedDifference(['nir','red']).rename('NDVI') #(first − second) / (first + second)
+            return image.addBands(ndvi)
+        
+        # Sentinel 2 image collection with corresponding named bands
+        bandNamesOut_s2 = ['Aerosols','blue','green','red','red edge 1','red edge 2','red edge 3','nir','red edge 4','water vapor','cirrus','swir1','swir2','QA60']
+        bandNamesS2 = ['B1','B2','B3','B4','B5','B6','B7','B8','B8A','B9','B10','B11','B12','QA60']
+        s2_1c = ee.ImageCollection('COPERNICUS/S2').select(bandNamesS2,bandNamesOut_s2)
+        s2_1c = s2_1c.filterDate(ee.Date(image.date().advance(-dateoffset,'days')), ee.Date(image.date().advance(+dateoffset,'days'))).filterBounds(image.geometry()).map(maskS2clouds).map(NDVI)
+        ndvi = ee.Image(s2_1c.qualityMosaic('NDVI').select('NDVI'))
+
+        return image.addBands(ndvi)
+
+    def add_landcover(image):
+        landcover = ee.Image(lc.select('Map'))
+        return image.addBands(landcover)
+
+    def mask_by_ndvi(image):
+        mask = image.select('NDVI').lte(ndvi_threshold)
+        return image.updateMask(mask)
+    
+    def mask_by_landcover(image):
+        mask = image.select('Map').eq(40).Or(image.select('Map').eq(30))
+        return image.updateMask(mask)
+    
+    
+
+    if lon is not None:
+        # Create Point Geometry (Longitude/Latitude)
+        lon = lon
+        lat = lat
+        poi = ee.Geometry.Point([lon, lat])  # GEE Geometry Object
+        fc_aoi = ee.FeatureCollection(poi)  # GEE FeatureCollection Object
+        fcg_aoi = ee.FeatureCollection(fc_aoi.geometry().buffer(5000))
+    else:
+        # Paths to initial polygon(s) and outdir for ts data.
+        p_i = path
+        p_o = os.path.dirname(path) + '/ts_data/'
+
+        # create folder in local space when not already there.
+        if not os.path.exists(p_o):
+            os.makedirs(p_o)
+            
+        # Load aoi features from file.
+        with open(p_i) as f:
+            data = geojson.load(f)
+
+        # Create GEE FeatureCollection from geojson file.
+        fc_aoi = ee.FeatureCollection(data)
+    
+        fcg_aoi = ee.FeatureCollection(fc_aoi.geometry().buffer(5000))
+        
+    area = fc_aoi.geometry().area().getInfo()
+    areag = fcg_aoi.geometry().area().getInfo()
+
+    # Sentinel 1 GRD image collection their dates and coverage over aoi
+    ic_s1 = ee.ImageCollection('COPERNICUS/S1_GRD').filterBounds(fc_aoi).filterDate(ee.Date(start), ee.Date(end)).filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+    icg_s1 = ee.ImageCollection('COPERNICUS/S1_GRD').filterBounds(fcg_aoi).filterDate(ee.Date(start), ee.Date(end)).filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+
+    s1_dates = [datetime(1970, 1, 1) + timedelta(milliseconds=x) for x in ic_s1.aggregate_array("system:time_start").getInfo()]
+    s1_dates = [x.strftime("%Y-%m-%dT%H:%M:%S.%fZ") for x in s1_dates]    
+    s1_coverd = ic_s1.map(get_area).aggregate_array('area').getInfo()
+    
+    s1g_dates = [datetime(1970, 1, 1) + timedelta(milliseconds=x) for x in ic_s1.aggregate_array("system:time_start").getInfo()]
+    s1g_dates = [x.strftime("%Y-%m-%dT%H:%M:%S.%fZ") for x in s1g_dates]    
+    s1g_coverd = icg_s1.map(get_area).aggregate_array('area').getInfo()
+    
+    # Drop low coverage by metadata filter
+    s1_valid = [x for x,y in zip(s1_dates,s1_coverd) if y > area*0.25]
+    s1_valid_dates = ee.List(s1_valid).map(lambda x: ee.Date(x).millis())
+    #ic_s1 = ic_s1.filter(ee.Filter.inList("system:time_start", s1_valid_dates))
+
+    # Drop low coverage by metadata filter
+    s1g_valid = [x for x,y in zip(s1g_dates,s1g_coverd) if y > areag*0.25]
+    s1g_valid_dates = ee.List(s1g_valid).map(lambda x: ee.Date(x).millis())
+    #icg_s1 = icg_s1.filter(ee.Filter.inList("system:time_start", s1g_valid_dates))
+    
+    #print(ic_s1.size().getInfo(),'(%s)' %(len(s1_dates)), 'images between %s and %s' %(start,end), 'within %s km²' %(area/1000000),'\n') #s1_plot.aggregate_array("system:time_start").getInfo()
+    print(icg_s1.size().getInfo(),'(%s)' %(len(s1g_dates)), 'images between %s and %s' %(start,end), 'within %s km²' %(areag/1000000),'\n') #s1_plot.aggregate_array("system:time_start").getInfo()
+    
+    #Landcover map
+    lc = ee.ImageCollection("ESA/WorldCover/v100").first().clip(fcg_aoi.union().geometry())
+    
+    if with_ndvi == 'yes':
+        # Add ndvi band
+        ic_s1 = ic_s1.map(add_ndvi)
+
+        # Mask areas with ndvi > 0.6
+        #ic_s1 = ic_s1.map(mask_by_ndvi)
+        
+        # Map reducer function over imagecollection to get mean for multipolygon geometries
+        fc_s1 = ic_s1.map(lambda x: x.reduceRegions(collection=fc_aoi ,reducer='mean', crs='EPSG:4326',scale=10)).flatten()
+    else:
+        # Map reducer function over imagecollection to get mean for multipolygon geometries
+        fc_s1 = ic_s1.map(lambda x: x.reduceRegions(collection=fc_aoi ,reducer='mean', crs='EPSG:4326',scale=10)).flatten()
+    
+    if with_ndvi == 'yes':
+        # Add ndvi band
+        icg_s1 = icg_s1.map(add_ndvi)
+        icg_s1 = icg_s1.map(add_landcover)
+        # Mask areas with ndvi > 0.4 and landcover != 30,40
+        icg_s1 = icg_s1.map(mask_by_ndvi)
+        icg_s1 = icg_s1.map(mask_by_landcover)
+        # Map reducer function over imagecollection to get mean for multipolygon geometries
+        fcg_s1 = icg_s1.map(lambda x: x.reduceRegions(collection=fcg_aoi ,reducer='mean', crs='EPSG:4326',scale=10)).flatten()
+    else:
+        # Map reducer function over imagecollection to get mean for multipolygon geometries
+        fcg_s1 = icg_s1.map(lambda x: x.reduceRegions(collection=fcg_aoi ,reducer='mean', crs='EPSG:4326',scale=10)).flatten()
+    
+    if grid_to_dataframe == True:
+        ts = fcg_s1.getInfo()
+        # Aggregate data
+        #orbit = icg_s1.aggregate_array('orbitProperties_pass').getInfo()
+        #platform = icg_s1.aggregate_array('platform_number').getInfo()
+        img_id = [x['id'] for x in ts['features']]
+        date = [datetime.strptime(x['id'].split('_')[4][:15], '%Y%m%dT%H%M%S') for x in ts['features']]
+        geometry = [Point(x['geometry']['coordinates'][0][0]) for x in ts['features']]
+        VH = [x['properties']['VH'] for x in ts['features']]
+        VV = [x['properties']['VV'] for x in ts['features']]
+        angle = [x['properties']['angle'] for x in ts['features']]
+        ndvi = [x['properties']['NDVI'] for x in ts['features']]
+        
+        # Create GeopandasDataFrame
+        gdf = gpd.GeoDataFrame({'date' : date, 'VV' : VV, 'VH' : VH, 'angle' : angle, 'NDVI' : ndvi, 'img_id' : img_id, 'geometry' : geometry}) #
+        
+        gdf.to_file(filename = path + outname + '_grid' + '.geojson', driver = 'GeoJSON')
+        print('Saved' + path + outname + '_grid')
+    else:
+        # Export the FeatureCollection to a KML file.
+        task1 = ee.batch.Export.table.toDrive(collection = fc_s1, description='vectorsToDrive',folder='idm_gee_export', fileFormat= 'GeoJSON', fileNamePrefix=outname + '_plot')
+        task1.start()
+
+        while task1.active():
+          print('Polling for task (id: {}).'.format(task1.id))
+          time.sleep(15)
+
+        # Export the FeatureCollection to a KML file.
+        task2 = ee.batch.Export.table.toDrive(collection = fcg_s1,description='vectorsGToDrive',folder='idm_gee_export', fileFormat= 'GeoJSON', fileNamePrefix=outname + '_grid')
+        task2.start()
+
+        while task2.active():
+          print('Polling for task (id: {}).'.format(task2.id))
+          time.sleep(15)
+
+    return print('Finished')
 if __name__ == "__main__":
     print("hea")
