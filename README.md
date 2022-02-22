@@ -9,6 +9,12 @@ Most functions used inside jupyter_notebooks/... are stored in irrigation_detect
 Google Earth Engine mainly for processing and downloading Satellite data. You can apply [here](http://code.earthengine.google.com/)   
 
 International Soil Moisture Network to get in-situ soil moisture time series data. You can apply [here](https://ismn.geo.tuwien.ac.at/en/accounts/signup/)    
+
+API's used: 
+
+[earthengine-api | Python and JavaScript client libraries for calling the Google Earth Engine API](https://github.com/google/earthengine-api)
+
+[keras | Deep learning API running on top of the machine learning platform TensorFlow](https://github.com/keras-team/keras)
     
 ## Notebooks inside jupyter_notebooks folder:
 ### 01_SSM_1km_V1 [Product Source | World](https://land.copernicus.eu/global/products/ssm)
