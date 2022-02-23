@@ -113,6 +113,7 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 [THEIA IRSTEA SOIL MOISTURE CATALOG | radar signal inversion algorithm uses neural networks](https://thisme.cines.teledetection.fr/home)
 
 ### Remote Sensing
+[Deep-learning on satellite imagery wiki](https://github.com/alabarga/geospatial-python/wiki/Deep-learning-(DL)-on-satellite-imagery)
 
 [IDB Index DataBase | A database for remote sensing indices](https://www.indexdatabase.de/)
 
