@@ -82,6 +82,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [geojson.io | Tool for draw, view, and sharing geometrical features online](http://geojson.io/#map=2/20.0/0.0)
 
+[georeferencer | Online Georeferencing Side by Side](https://www.georeferencer.com)
+
 [TablesGenerator.com | LaTeX and HTML table generator](https://www.tablesgenerator.com/)
 
 [Overleaf | Online collaborative writing and publishing tool with LaTeX enviroment](https://www.overleaf.com)
