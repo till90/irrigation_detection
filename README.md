@@ -179,3 +179,6 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [binder | Turn a Git repo into a collection of interactive notebooks](https://mybinder.org/)
 
+### Soil
+
+[soiltextures | Soil texture classification](https://github.com/sagitta1618/soiltexture)
