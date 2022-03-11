@@ -102,6 +102,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [Copernicus Open Access Hub | Sentinel Data Download](https://scihub.copernicus.eu/)
 
+[OpenEO | API to connect R, Python, JavaScript clients to big Earth observation cloud back-ends](https://openeo.org/)
+
 [THEIA | Products and Algorithms for Land Surfaces](https://www.theia-land.fr/en/homepage-en/)
 
 [irpi hydrologie | Satellite and Ground Data, Code](http://hydrology.irpi.cnr.it/download-area/)
