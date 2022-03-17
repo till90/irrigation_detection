@@ -153,6 +153,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [tsfresh | Automatically Calculates a large number of time series characteristic features](https://tsfresh.readthedocs.io/en/latest/)
 
+[sklearn | Framework for Machine Learning](https://scikit-learn.org)
+
 [sktime | Framework for Machine Learning with time series](https://www.sktime.org/en/stable/)
 
 [GeostatsPy | Geostatistical library](https://github.com/GeostatsGuy/GeostatsPy)
