@@ -173,6 +173,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [hvPlot | A high-level plotting API for the PyData ecosystem built on HoloViews](https://hvplot.holoviz.org/)
 
+[Yellowbrick | Extend Sklearn with Visualizations API](https://www.scikit-yb.org/en/latest/index.html)
+
 ### Web-Apps
 
 [streamlit | Data scripts into sharable web apps](https://github.com/streamlit/streamlit)
