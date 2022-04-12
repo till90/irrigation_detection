@@ -90,6 +90,8 @@ Matrix Profile, Clustering, Biclustering, Clustering Time Series, Stump, statist
 
 [doi2bib | DOI to BibTeX entry](https://www.doi2bib.org/)
 
+[transfer.sh | Easy file sharing from the command line](https://transfer.sh/)
+
 ## Data
 
 ### Portals
